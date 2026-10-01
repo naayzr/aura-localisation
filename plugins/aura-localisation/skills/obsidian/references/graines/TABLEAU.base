@@ -1,0 +1,87 @@
+properties:
+  file.name:
+    displayName: Fichier
+  file.mtime:
+    displayName: Modifié le
+  note.nom_fr:
+    displayName: Nom français
+  note.nom_en:
+    displayName: Nom anglais
+  note.type:
+    displayName: Type
+  note.gamme:
+    displayName: Gamme
+  note.registre:
+    displayName: Sa voix
+  note.statut_fiche:
+    displayName: Fiche
+views:
+  - type: table
+    name: Mes gammes
+    filters:
+      and:
+        - file.inFolder("Core/Gammes")
+        - file.ext == "md"
+        - file.basename != "LISEZ-MOI"
+    order:
+      - file.name
+      - file.mtime
+    sort:
+      - property: file.name
+        direction: ASC
+  - type: table
+    name: Mes éditeurs
+    filters:
+      and:
+        - file.inFolder("Core/Editeurs")
+        - file.ext == "md"
+        - file.basename != "LISEZ-MOI"
+        - file.basename != "README"
+    order:
+      - file.name
+      - file.mtime
+    sort:
+      - property: file.name
+        direction: ASC
+  - type: table
+    name: Dernières séances
+    filters:
+      and:
+        - file.inFolder("Core/Sessions")
+        - file.ext == "md"
+        - file.basename != "LISEZ-MOI"
+    order:
+      - file.name
+      - file.mtime
+    sort:
+      - property: file.name
+        direction: DESC
+    limit: 10
+  - type: table
+    name: Fiches d'univers
+    filters:
+      and:
+        - file.inFolder("Références/Narration/Univers")
+        - file.ext == "md"
+        - file.basename != "LISEZ-MOI"
+    order:
+      - file.name
+      - note.nom_fr
+      - note.type
+      - note.gamme
+      - note.registre
+      - note.statut_fiche
+    groupBy:
+      property: note.gamme
+      direction: ASC
+  - type: cards
+    name: Personnages
+    filters:
+      and:
+        - file.inFolder("Références/Narration/Univers")
+        - note.type == "personnage"
+    order:
+      - file.name
+      - note.nom_fr
+      - note.gamme
+      - note.registre

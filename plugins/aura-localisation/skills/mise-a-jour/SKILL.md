@@ -74,7 +74,7 @@ Si une vérification échoue, tu le dis tel quel, sans conclure « c'est fait »
 ### 8. Le compte rendu à Hervé
 ```
 AURA est à jour : version [ancienne] → 3.0.
-Écrit : l'amorce CLAUDE.md, Core/VERSION.md, la carte des outils Core/Skills.md, le guide GUIDE_AURA.md, [n] nouveaux fichiers de mémoire vides.
+Écrit : l'amorce CLAUDE.md, Core/VERSION.md, la carte des outils Core/Skills.md, les guides GUIDE_AURA.md et GUIDE_OBSIDIAN.md, [n] nouveaux fichiers de mémoire vides.
 Conservé : [anciens fichiers enrichis copiés dans _archives-systeme/ ; outils sur mesure repris dans Core/Outils_Perso.md — ou « rien à conserver »]
 Ta mémoire : [N] fichiers vérifiés, aucun modifié.
 Ce qui change pour toi : [3 lignes tirées du guide, section « Ce qui a changé »]

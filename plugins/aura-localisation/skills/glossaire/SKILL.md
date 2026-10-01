@@ -243,6 +243,7 @@ Hervé corrige un terme :
 3. Après son accord : sauvegarde, modification du glossaire (`modifier`, avec `--erratum` si le terme
    était Gelé), remplacements dans les copies.
 4. **Relancer la recherche** et montrer le nouveau compte : zéro hors des endroits gardés pour trace.
+5. **Les fiches d'univers** (`Références/Narration/Univers`, si Hervé en tient) portent le nom français en propriété `nom_fr` : elles sont *à remplacer*, avec les noms affichés des liens qui les visent ; la porte qui le prouve est celle du skill `obsidian` (section 3).
 
 Si l'erreur était une invention d'AURA, le protocole du skill `noyau` (registre `Core/evas.md`)
 s'applique en plus.

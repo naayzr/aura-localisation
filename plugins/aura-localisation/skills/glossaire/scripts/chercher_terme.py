@@ -24,7 +24,8 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 import lecture  # noqa: E402
 import modele_glossaire as M  # noqa: E402
 
-LISIBLES = {".xlsx", ".docx", ".csv", ".tsv", ".txt", ".md"}
+LISIBLES = {".xlsx", ".docx", ".csv", ".tsv", ".txt", ".md", ".base", ".canvas"}
+# .base et .canvas : fichiers texte d'Obsidian (tableau, toile), lus ligne à ligne comme du texte
 ZONES = [  # (préfixe du chemin relatif, nom affiché) — dans l'ordre d'affichage
     ("Glossaires", "Glossaires"),
     ("Références/Segments", "Segments réutilisables"),
@@ -136,7 +137,10 @@ def chercher(racine, rx, avec_archives):
                                                     n))
                     fouilles += 1
                     continue
-            textes = lecture.textes(p)
+            if p.suffix.lower() in (".base", ".canvas"):
+                textes = [(f"L{i}", l) for i, l in enumerate(lecture._decoder(p.read_bytes()).splitlines(), 1) if l.strip()]
+            else:
+                textes = lecture.textes(p)
             fouilles += 1
         except Exception as e:  # illisible : listé, jamais compté comme « absent »
             non_fouilles.append((rel, f"illisible ({e.__class__.__name__})"))

@@ -17,4 +17,4 @@ Les versions suivantes arrivent seules grâce à la synchronisation automatique.
 
 ## Contenu
 - `.claude-plugin/marketplace.json` — la marketplace
-- `plugins/aura-localisation/` — l'extension : 14 skills, 4 commandes, journal des versions
+- `plugins/aura-localisation/` — l'extension : 15 skills, 4 commandes, journal des versions

@@ -11,7 +11,7 @@ Hervé tape `AURA DIAGNOSTIC` (ou dit « quelque chose ne marche pas »). Tu fai
 6. **L'extension** : les skills `aura-localisation:…` se chargent (tu en charges un pour vérifier). Les skills ont besoin que l'exécution de code soit activée dans les réglages (Réglages > Capacités).
 7. **Les programmes voient-ils le dossier ?** (règle « Les programmes et le dossier d'Hervé », étape 0) : dans une tâche qui tourne dans le cloud, la réponse normale est **non** — ce n'est pas une panne, c'est le fonctionnement ; tu le dis en 🟢, avec la marche à suivre (glisser le fichier).
 8. **Les glossaires** (seulement si le programme voit le dossier) : chaque `Glossaires/Glossaire_*.xlsx` s'ouvre (script du skill `glossaire`) ; un fichier qui refuse de s'ouvrir alors que le programme voit le dossier est peut-être ouvert dans Excel.
-9. **Les doublons de synchronisation** <!-- [I-26] --> : des fichiers « Nom (1).xlsx », « Nom-NOMDUPC.md », « Nom 2.md » signalent un conflit de synchronisation (OneDrive, Drive). Le bon remède est que HERVÉ WORLD ne soit pas dans un dossier synchronisé en permanence ; tu le signales, tu ne fusionnes rien seule.
+9. **Les doublons de synchronisation** <!-- [I-26] --> : des fichiers « Nom (1).xlsx », « Nom-NOMDUPC.md », « Nom 2.md » signalent un conflit de synchronisation (OneDrive, Drive). Le bon remède est que HERVÉ WORLD ne soit pas dans un dossier synchronisé en permanence ; s'il reste dans OneDrive, le minimum est « Toujours conserver sur cet appareil » sur HERVÉ WORLD (clic droit dans l'Explorateur de fichiers), comme le dit `GUIDE_OBSIDIAN.md`. Tu le signales, tu ne fusionnes rien seule.
 
 ## Le verdict
 ```

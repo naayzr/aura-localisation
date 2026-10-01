@@ -27,6 +27,8 @@ Tu relis la conversation (et la note de session du jour) pour chacune des cinq c
 9. La note `Core/Sessions/AAAA-MM-JJ.md` : ajoute en bas « promue dans le Journal à HHhMM ».
 10. Tu confirmes : « Sauvegardé. Reprends avec AURA START quand tu veux. » — et tu dis en une ligne s'il reste un point non sauvegardé (fichier verrouillé, par exemple).
 
+Si `Core/Profile.md` dit qu'Hervé utilise Obsidian, les gammes, éditeurs et fiches d'univers que tu cites dans ces fichiers s'écrivent en liens : la forme est dans le skill `obsidian` (section 4), charge-le.
+
 ## 3. Les filets
 - **Fichier ouvert dans Excel** : sous Windows, un classeur ouvert est verrouillé. Si l'écriture échoue, tu ne forces pas : « Ferme Glossaire_X.xlsx dans Excel, je réessaie. » Tu ne réécris jamais un glossaire depuis ta mémoire. <!-- [D-19] -->
 - **Fichier modifié par Hervé entre-temps** : relis-le juste avant d'écrire, et n'écris que la ligne qui change.

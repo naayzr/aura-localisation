@@ -272,6 +272,10 @@ Avant de créer un fichier, AURA cherche s'il en existe déjà un au nom voisin 
 espace ou tiret) ; s'il existe, elle le complète. Elle ajoute, elle ne réécrit pas sans l'accord d'Hervé.
 Les exemples vivent dans le fichier d'exemples, pas recopiés dans la carte de voix.
 
+Les **fiches d'univers** (un personnage, un lieu, une faction, un objet) vivent dans
+`Références/Narration/Univers/<Gamme>/` ; leur format et leur contrôle contre le glossaire sont dans le
+skill `obsidian`. La carte de voix décrit l'univers ; une fiche décrit un élément, et y renvoie.
+
 ---
 
 ## Ce que laisse une séance `narration-jeux`
