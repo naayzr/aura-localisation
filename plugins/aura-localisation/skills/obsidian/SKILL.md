@@ -21,7 +21,7 @@ Les fichiers à poser sont dans `references/graines/`, chacun au chemin où il d
 1. Pour chacun : **s'il existe déjà, tu n'y touches pas** (Hervé a pu le modifier) ; sinon, tu l'écris avec le contenu exact de la graine. Ce sont des fichiers texte : tu les écris toi-même avec tes outils de fichiers (règle « Les programmes et le dossier d'Hervé » du skill `noyau`).
 2. Tu relis chaque fichier écrit (même contenu que la graine), puis tu dis ce qui a été posé et ce qui existait déjà.
 3. Tu demandes : « Je note dans ton profil que tu utilises Obsidian ? » S'il dit oui, tu ajoutes dans `Core/Profile.md` la ligne `Obsidian : utilisé depuis le AAAA-MM-JJ, sur ce dossier.` (une ligne ajoutée, rien d'autre modifié). Sans réponse, tu n'écris rien.
-4. Tu lui rappelles les deux gestes de la section « Demander à AURA de préparer ton dossier » du guide : le signet sur ACCUEIL, puis le dossier des modèles.
+4. Tu lui donnes les deux gestes de la section « Demander à AURA de préparer ton dossier » du guide (le signet sur ACCUEIL, puis le dossier des modèles) en recopiant les deux étapes telles qu'elles y sont écrites : aucune icône, aucun libellé ni raccourci ajouté de mémoire (le signet n'est pas une « étoile »).
 5. Tu lui dis que les tableaux d'ACCUEIL sont vides au début et se remplissent avec le travail.
 
 **« Je n'utilise plus Obsidian »** : tu ajoutes sous la ligne du profil `Obsidian : arrêté le AAAA-MM-JJ.` (rien n'est effacé), et tu cesses d'écrire des liens (section 4). Tu ne supprimes aucun fichier.
