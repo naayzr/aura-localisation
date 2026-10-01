@@ -46,6 +46,11 @@
    "lignes": 98,
    "premiere_ligne": "---",
    "derniere_ligne_commence_par": "*Mettre à jour quand un nouveau skill est créé"
+  },
+  "Core/Profile.md": {
+   "lignes": 51,
+   "premiere_ligne": "---",
+   "derniere_ligne_commence_par": "*Fichier créé le 2026-05-31. À enrichir lors du premier AURA START"
   }
  },
  "skills_v2": [
@@ -56,5 +61,25 @@
   "qa-coherence",
   "relecture-multi-agents",
   "traduction-jeux"
- ]
+ ],
+ "etapes_v2": [
+  "1 Ce qu'est AURA",
+  "2 La structure de tes fichiers",
+  "3 Ton profil",
+  "3b Ta base de connaissances (glossaires, références)",
+  "4 Tes outils",
+  "5 Un outil sur mesure",
+  "6 Une première action concrète",
+  "7 La routine"
+ ],
+ "correspondance_etapes_v2_v3": {
+  "1": "ACCUEIL",
+  "2": "FICHIERS",
+  "3": "PROFIL",
+  "3b": "BASE",
+  "4": "OUTILS",
+  "5": "OUTIL-SUR-MESURE",
+  "6": "PREMIERE-ACTION",
+  "7": "ROUTINE"
+ }
 }

@@ -77,6 +77,26 @@ rédiger `--provenance`, qui remplit la colonne SOURCE de chaque terme.
 Item* → OBJET ; inconnu → AUTRE). C'est une **proposition**, marquée « CATÉGORIE proposée à l'import,
 à valider » dans NOTES, parce qu'elle décide si le genre est obligatoire.
 
+## Un glossaire fait en version 2.0 avec Hervé — la migration
+
+Ses glossaires créés avec AURA v2.0 s'appellent `GLOSSAIRE_<GAMME>_vN.xlsx` et ont plusieurs onglets
+(`GLOSSAIRE_<GAMME>`, `EN_ATTENTE`, `EXTENSION`, `HÉRITÉ`, `CHANGELOG`, `LISEZMOI`). Ce n'est **pas** un
+import : ses validations ont été faites avec lui, on les **garde**.
+
+1. **Essai** : `python3 scripts/gerer_glossaire.py migrer "<Glossaires/GLOSSAIRE_X_v2.3.xlsx>" --gamme <Gamme>`.
+   Le programme lit **tous** les onglets, donne un compte par onglet, nomme ceux qu'il ne lit pas
+   (notice), garde les statuts (Confirmé, Gelé…), met les termes de `EN_ATTENTE` en « À confirmer »,
+   garde une seule fois un terme présent dans deux onglets, et reprend l'historique `CHANGELOG`.
+2. Tu montres ce compte rendu à Hervé ; avec son accord, la même commande avec `--ecrire` crée
+   `Glossaires/Glossaire_<Gamme>.xlsx` au nouveau standard.
+3. **L'ancien fichier n'est ni modifié ni déplacé.** Une fois le nouveau vérifié ensemble (nombre de
+   termes, quelques statuts), Hervé range lui-même l'ancien dans `Core/Archives/` : deux maîtres pour une
+   gamme, ce sont deux vérités.
+4. Un terme **Gelé** sans « PUBLIÉ DANS » est signalé par le contrôle : on complète avec lui (quel produit
+   imprimé), on ne devine pas.
+5. Dans une tâche où le programme ne voit pas le dossier, la règle « Les programmes et le dossier
+   d'Hervé » du skill `noyau` s'applique (fichier glissé, nouveau fichier posé par ses deux gestes).
+
 ## Le glossaire Tainted Grail de la démonstration
 
 Le fichier `Glossaire_TaintedGrail_EN-FR.xlsx` (relu le 01/10/2026 : 9 372 octets, une feuille, 64

@@ -79,6 +79,7 @@ Hervé ne voit jamais les noms techniques des skills, sauf s'il demande comment 
 | espaces insécables, guillemets, apostrophes, majuscules, typographie | `typographie-fr` |
 | compter les caractères, devis, facture, volume, délai | `comptage-caracteres` |
 | longueur d'une carte, débord, texte trop long, balises et icônes intactes | `controle-longueur` |
+| maquette, planche de cartes, « est-ce que ça tient sur la carte », mise en page, InDesign, Affinity, Adobe, Canva, présentation ou visuel pour un éditeur | `maquettes` |
 | e-mail à un éditeur, questions groupées, mentions légales, fiche éditeur | `brief-editeur` |
 | gamme, produits, calendrier, rétroplanning, BAT, errata, nouvelle version du source, traducteurs et relecteurs à coordonner, relire le travail d'un autre | `gestion-gamme` |
 | « crée-moi un outil pour… » | le créateur de skills de Claude (`skill-creator`) ; l'outil créé est noté dans `Core/Outils_Perso.md` |

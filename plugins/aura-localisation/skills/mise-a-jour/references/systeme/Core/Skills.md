@@ -14,5 +14,6 @@ Depuis la version 3.0, les outils d'AURA viennent de l'extension **aura-localisa
 | Typographie française | Contrôle et corrections proposées (espaces insécables, guillemets, apostrophes…) |
 | Compter les caractères | Comptes exacts pour devis, facture et délai |
 | Longueur des textes de cartes | Débord, expansion anglais → français, balises et icônes intactes |
+| Maquettes et visuels | Planche de toutes tes cartes en français pour voir celles qui débordent, fichier de fusion pour InDesign ou Affinity, relecture de BAT, présentation pour un éditeur |
 | E-mail à un éditeur | Brouillon que tu envoies toi-même ; questions groupées ; mentions légales à faire valider |
 | Gérer une gamme | Produits, calendrier à rebours, BAT, errata, nouvelles versions du texte source, coordination des traducteurs et relecteurs |

@@ -24,7 +24,8 @@ Pour tout le reste, parle-lui normalement.
 - **Elle ne perd plus le fil de ta mise en place** : si tu t'arrêtes au milieu, elle reprend à l'étape où vous en étiez.
 - **Elle sauvegarde seule** pendant les longues séances, et note au fil de l'eau ce qui compte (termes validés, échéances, corrections). Fais quand même `AURA SAVE` en fin de séance.
 - **Ses outils se mettent à jour tout seuls** : ils viennent d'une extension installée sur ton compte Claude. Quand Dorian t'annonce une nouveauté, tape `AURA MISE À JOUR`.
-- **Nouveaux outils pour ton métier** : contrôle de la typographie française, comptage exact des caractères pour tes devis et factures, contrôle de la longueur des textes de cartes et des balises, genre des noms inventés dans le glossaire, gestion d'une gamme (calendrier à rebours, BAT, errata, nouvelles versions du texte source, coordination des traducteurs et relecteurs).
+- **Nouveaux outils pour ton métier** : contrôle de la typographie française, comptage exact des caractères pour tes devis et factures, contrôle de la longueur des textes de cartes et des balises, genre des noms inventés dans le glossaire, gestion d'une gamme (calendrier à rebours, BAT, errata, nouvelles versions du texte source, coordination des traducteurs et relecteurs), et **maquettes** : une planche de toutes tes cartes en français pour voir d'un coup celles qui débordent, la préparation d'une fusion pour InDesign ou Affinity, des présentations pour tes éditeurs.
+- **Tes glossaires de la version 2.0 sont convertis au nouveau format avec toi**, en gardant tes validations : rien n'est revalidé à zéro.
 - **La relecture avant livraison est légère par défaut** ; la relecture « à plusieurs relecteurs » se fait seulement si tu la demandes, parce qu'elle consomme beaucoup ton abonnement.
 
 ## Quand AURA te demande de glisser un fichier

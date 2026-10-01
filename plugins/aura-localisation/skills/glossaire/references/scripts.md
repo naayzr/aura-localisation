@@ -11,7 +11,7 @@ dossier se pose par la procédure « Poser un fichier produit », jamais par sim
 | `modele_glossaire.py` | les listes du modèle (colonnes, statuts, catégories) et l'écriture du classeur ; lancé seul, il affiche les listes | — |
 | `controle_glossaire.py` | contrôle un ou plusieurs glossaires | jamais |
 | `chercher_terme.py` | cherche un terme et ses variantes dans tout le dossier HERVÉ WORLD | jamais |
-| `gerer_glossaire.py` | créer, importer, fusionner, modifier, exporter, lire des retours, comparer, sauvegarder | seulement avec `--ecrire` |
+| `gerer_glossaire.py` | créer, importer, fusionner, **migrer un glossaire v2.0** (tous ses onglets, statuts repris), modifier, exporter, lire des retours, comparer, sauvegarder | seulement avec `--ecrire` |
 
 ## gerer_glossaire.py
 

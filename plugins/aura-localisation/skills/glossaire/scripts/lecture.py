@@ -163,13 +163,25 @@ def _decoder(octets):
     return octets.decode("latin-1", errors="replace")
 
 
+def separateur(texte):
+    """Le séparateur d'un CSV. Un texte français contient des virgules : deviner sur tout le contenu
+    (csv.Sniffer) prenait la virgule pour un fichier en points-virgules et perdait les colonnes. On regarde
+    les 10 premières lignes non vides, et on retient le premier séparateur, dans l'ordre ; tab , |,
+    présent dans au moins la moitié d'entre elles (une ligne de titre au-dessus du tableau n'y change rien).
+    Aucun → une seule colonne."""
+    lignes = [l for l in texte.splitlines() if l.strip()][:10]
+    for d in (";", "\t", ",", "|"):
+        if lignes and sum(1 for l in lignes if d in l) * 2 >= len(lignes):
+            return d
+    return None
+
+
 def lignes_csv(chemin):
     texte = _decoder(Path(chemin).read_bytes())
-    try:
-        dialecte = csv.Sniffer().sniff(texte[:4096], delimiters=";,\t|")
-    except csv.Error:
-        dialecte = csv.excel
-    return [l for l in csv.reader(io.StringIO(texte), dialecte)]
+    d = separateur(texte)
+    if d is None:
+        return [[l] for l in texte.splitlines()]
+    return [l for l in csv.reader(io.StringIO(texte), delimiter=d)]
 
 
 def textes(chemin):

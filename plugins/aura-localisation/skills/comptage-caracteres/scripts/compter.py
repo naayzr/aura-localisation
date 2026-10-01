@@ -122,6 +122,19 @@ def auto_test():
     if faux_docx:
         print(f"AUTO-TEST ÉCHOUÉ — Word piégé (zone de texte, note, en-tête, masqué) : écarts (obtenu, attendu) {faux_docx}")
         return 1
+    # un CSV « à la française » : ligne de titre au-dessus, séparateur ;, virgules dans le texte
+    import tempfile
+    with tempfile.TemporaryDirectory() as d:
+        f = Path(d) / "cartes.csv"
+        f.write_text("Gamme test\nCarte;EN;FR\nC1;Draw, then discard.;Piochez, puis défaussez.\n"
+                     "C2;Rest.;\"Reposez-vous, ou soignez 1 blessure ; votre tour se termine.\"\n", encoding="utf-8")
+        try:
+            col = segments_de(f, "FR")
+        except SystemExit:
+            col = []
+    if [t for _, t in col] != ["Piochez, puis défaussez.", "Reposez-vous, ou soignez 1 blessure ; votre tour se termine."]:
+        print(f"AUTO-TEST ÉCHOUÉ — CSV en points-virgules avec virgules dans le texte mal lu : {col}")
+        return 1
     segs = [("§1", "Piochez 2 cartes."), ("§2", "Gagnez {or} 3."), ("§3", "Piochez 2 cartes.")]
     c = compter(segs)
     attendu = {"segments": 3, "cec": 17 + 14 + 17, "ces": 15 + 12 + 15, "balises": 1,

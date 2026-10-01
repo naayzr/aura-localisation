@@ -29,12 +29,15 @@ Le dossier connecté doit contenir `CLAUDE.md` et `Core/CONTEXT.md`. Sinon : arr
 **Déjà à jour** si : version installée = 3.0, l'amorce porte `AURA-HERVE-VERSION: 3.0`, et tous les fichiers de `systeme_local` et de `graines` existent. Alors tu réponds : « AURA est déjà à jour (version 3.0). Rien n'a été modifié. » — et tu t'arrêtes, sans rien écrire.
 Si la version est déjà 3.0 mais qu'un fichier de `systeme_local` ou une graine manque, tu recrées **seulement ce fichier-là** et tu le dis (« J'ai recréé Core/Suivi.md, qui manquait ») ; tu ne réécris rien d'autre.
 
-### 3. L'état de la mise en place (seulement si `Core/ONBOARDING.md` n'existe pas)
-Déduis où en est Hervé, sans rien modifier :
-- `Core/Profile.md` encore rempli de « — » partout, aucune fiche dans `Core/Editeurs/` (hors README), `Glossaires/` vide, et une seule session au Journal → `statut: non commencé`, `étape en cours: ACCUEIL`.
-- Sinon (profil commencé, fiches, glossaires, plusieurs sessions) → `statut: à confirmer`, et `étape en cours:` l'étape qui suit la dernière visiblement faite (profil rempli → BASE ; glossaire importé → OUTILS ; etc.). Ajoute une ligne `déduit par la mise à jour le AAAA-MM-JJ à partir de : [indices]`.
+### 3. L'état de la mise en place (seulement si `Core/ONBOARDING.md` n'existe pas) — sans deviner
+Compare `Core/Profile.md` à son empreinte d'origine (`empreintes_v2` dans `couches.json`) et compte les sessions du Journal (`## Session …`).
+- Profil **identique à l'origine** ET **une seule** session au Journal → la mise en place n'a pas commencé : `statut: non commencé`, `étape en cours: ACCUEIL`.
+- Sinon, tu **ne devines pas** l'étape (un profil pré-rempli par Dorian ressemble à un profil commencé) : `statut: à confirmer`, et tu notes en dessous `indices relevés le AAAA-MM-JJ : …` (profil modifié ou non, nombre de sessions, fiches éditeurs, glossaires). Au compte rendu, tu poses **une seule question** : « Ta mise en place est-elle terminée ? Sinon, à quelle étape t'es-tu arrêté ? » en lui rappelant les étapes de la version 2.0 qu'il a vues (`etapes_v2` dans `couches.json`). Sa réponse se traduit en identifiant v3 par `correspondance_etapes_v2_v3`, au START suivant.
 - `date de début:` « à confirmer avec Hervé » (la date du Journal de la version 2.0 est celle de la préparation, pas de l'installation).
 Tu crées `Core/ONBOARDING.md` à partir de `references/graines/Core/ONBOARDING.md`, avec ces valeurs.
+
+### 3 bis. Ses glossaires de la version 2.0 <!-- [R-06] -->
+Liste `Glossaires/`. Un fichier qui n'a pas le nom du nouveau standard (`Glossaire_<Gamme>.xlsx`), par exemple `GLOSSAIRE_<GAMME>_v2.3.xlsx`, est un **glossaire de la version 2.0** : tu n'y touches pas. Tu le notes pour le compte rendu (« ton glossaire X sera converti au nouveau format à ta prochaine séance, en gardant tes validations ») et, au moment de créer la graine `Core/Suivi.md`, tu y ajoutes une ligne par glossaire : « Glossaire v2.0 à convertir : X — attend Hervé — ouvert le AAAA-MM-JJ ». La conversion elle-même se fait avec lui, par le skill `glossaire` (migration d'un glossaire v2.0), jamais pendant la mise à jour.
 
 ### 4. Les anciens fichiers système — rien ne se perd <!-- [D-28] -->
 La version 2.0 présentait deux fichiers comme évolutifs : l'amorce `CLAUDE.md` et la carte des outils `Core/Skills.md` (son AURA l'enrichissait à chaque outil créé pour lui). Avant de les remplacer, compare **chacun** à son empreinte d'origine (`empreintes_v2` dans `couches.json` : nombre de lignes, première ligne, début de la dernière ligne).
@@ -59,7 +62,7 @@ Ce fichier est écrit par AURA MISE À JOUR. Ne pas le modifier à la main.
 
 ### 6. Créer les graines manquantes
 Pour chaque chemin de `graines` : s'il **n'existe pas**, crée-le avec le contenu du fichier correspondant sous `references/graines/` (crée les dossiers au besoin — c'est aussi ce qui recrée les dossiers vides perdus au téléchargement). S'il existe, **passe**. <!-- [D-25] -->
-Seule exception au contenu de la graine : `Core/Outils_Perso.md`, s'il n'existe pas, reçoit en plus une ligne par outil sur mesure trouvé à l'étape 4. S'il existe déjà, tu n'y touches pas et tu cites ces outils dans le compte rendu.
+Deux exceptions au contenu des graines, et seulement à leur création : `Core/Outils_Perso.md` reçoit en plus une ligne par outil sur mesure trouvé à l'étape 4 ; `Core/Suivi.md` reçoit une ligne par glossaire v2.0 trouvé à l'étape 3 bis. Si le fichier existe déjà, tu n'y touches pas et tu cites ces éléments dans le compte rendu.
 
 ### 7. Vérifier — avant de dire que c'est fait
 - Relis la première ligne de `CLAUDE.md` : `AURA-HERVE-VERSION: 3.0`.
@@ -76,10 +79,11 @@ Conservé : [anciens fichiers enrichis copiés dans _archives-systeme/ ; outils 
 Ta mémoire : [N] fichiers vérifiés, aucun modifié.
 Ce qui change pour toi : [3 lignes tirées du guide, section « Ce qui a changé »]
 ```
-Puis, une seule fois chacune, les trois suites utiles :
+Puis, une seule fois chacune, les suites utiles :
 1. **Une ligne à ajouter dans tes réglages**, pour qu'AURA soit toujours chargée, même dans une nouvelle tâche : Réglages > Général > Instructions pour Claude, coller la phrase donnée par la clé `ligne_instructions` de `references/couches.json` (recopie-la exactement, entre guillemets). <!-- [D-05] -->
 2. **Le dossier `skills/`** : si l'étape 4 n'y a trouvé que les 7 outils de la version 2.0, dis qu'AURA ne le lit plus et qu'il peut le supprimer quand il veut. S'il contient un outil fait pour lui, ne propose **pas** de le supprimer.
-3. Si la mise en place est `à confirmer` : « On s'était arrêtés vers l'étape [N] — on reprend là ? »
+3. Si la mise en place est `à confirmer` : la question unique de l'étape 3 (« Ta mise en place est-elle terminée ? Sinon, à quelle étape t'es-tu arrêté ? »), avec la liste des étapes de la version 2.0.
+4. S'il a des glossaires v2.0 : « Ton glossaire [nom] sera converti au nouveau format à ta prochaine séance, sans perdre tes validations. »
 
 ## Les mises à jour suivantes
 Quand Dorian publie une nouvelle version, l'extension arrive seule sur le compte ; si la couche locale doit changer, ce skill porte la nouvelle version et AURA START propose « tape AURA MISE À JOUR ». Les fichiers de mémoire ne sont jamais concernés.

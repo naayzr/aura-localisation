@@ -214,6 +214,16 @@ def construire_termes(source, args):
         dire("Refus : aucune ligne d'en-tête avec une colonne anglaise ET une colonne française n'a été trouvée.")
         dire("Indiquer les colonnes : --colonne EN=<en-tête anglais> --colonne FR=<en-tête français>.")
         sys.exit(2)
+    termes, rapport = termes_de_feuille(nom, lignes, i, corresp, args, Path(source).name)
+    # Les AUTRES feuilles ne sont pas lues par l'import : on les nomme, avec leur taille, au lieu de les
+    # taire (un onglet EXTENSION disparaissait sans un mot). Pour un glossaire v2.0 : commande migrer.
+    rapport["feuilles_ignorees"] = [(n, sum(1 for l in ls if any(str(c).strip() for c in l)))
+                                    for n, ls in feuilles.items() if n != nom]
+    return termes, rapport
+
+
+def termes_de_feuille(nom, lignes, i, corresp, args, nom_src):
+    """Les termes d'UNE feuille dont l'en-tête est à la ligne i (statut d'origine gardé dans _statut_src)."""
     entetes = [M.nfc(x).strip() for x in lignes[i]]
     rapport = {"feuille": nom, "ligne_entete": i + 1, "preambule": [" ".join(str(c) for c in l if str(c).strip())
                                                                     for l in lignes[:i] if any(str(c).strip() for c in l)],
@@ -224,7 +234,6 @@ def construire_termes(source, args):
         j_par.setdefault(cible, []).append(j)
     termes = []
     date = M.aujourdhui()
-    nom_src = Path(source).name
     for n, ligne in enumerate(lignes[i + 1:], start=i + 2):
         val = [M.nfc(v).strip() for v in ligne] + [""] * (len(entetes) - len(ligne))
 
@@ -293,6 +302,7 @@ def construire_termes(source, args):
             rapport["doubles_fr"].append((n, en, t["FR"]))
         t["SOURCE"] = args.provenance or f"Import de {nom_src}"
         t["STATUT"] = "Brouillon"
+        t["_statut_src"] = st
         t["NOTES"] = joindre_notes(*notes)
         t["DATE"] = date
         t["_ligne_source"] = n
@@ -302,6 +312,8 @@ def construire_termes(source, args):
 
 def afficher_rapport(rapport, termes, source):
     dire(f"Source : {source} — feuille « {rapport['feuille']} », en-tête trouvé ligne {rapport['ligne_entete']}.")
+    for n, nb in rapport.get("feuilles_ignorees", []):
+        dire(f"  FEUILLE NON LUE : « {n} » ({nb} lignes remplies). Glossaire v2.0 à plusieurs onglets → commande migrer.")
     if rapport["preambule"]:
         dire("Lignes au-dessus de l'en-tête (à reprendre dans --provenance si elles disent d'où vient le glossaire) :")
         for l in rapport["preambule"]:
@@ -433,6 +445,91 @@ def cmd_importer(args):
                             "RAISON": f"Import de {Path(args.source).name}" + (f" ({args.provenance})" if args.provenance else ""),
                             "DÉCIDÉ PAR": args.par or ""}]
     return ecrire_ou_essai(args, maitre, M.gamme_depuis_nom(maitre), tous, ch, existe=True)
+
+
+# ------------------------------------------------------------------ migrer (glossaire v2.0 → v3)
+# Un glossaire fait AVEC Hervé en v2.0 (GLOSSAIRE_<GAMME>_vN.xlsx, onglets GLOSSAIRE_X, EN_ATTENTE,
+# HÉRITÉ, EXTENSION, CHANGELOG, LISEZMOI). Ses statuts ont été validés avec lui : on les GARDE (au
+# contraire d'un import, où rien n'entre validé). On lit TOUS les onglets, on compte par onglet, on
+# reprend son CHANGELOG, et l'ancien fichier n'est jamais déplacé ni modifié.
+ONGLETS_HISTOIRE = {"CHANGELOG", "HISTORIQUE"}
+ONGLETS_SANS_TERMES = {"LISEZMOI", "LISEZ MOI", "NOTICE", "TABLEAU DE BORD", "README"}
+
+
+def cmd_migrer(args):
+    source = Path(args.source)
+    if not source.is_file():
+        sys.exit(f"Fichier introuvable : {source}")
+    gamme = args.gamme
+    sortie = Path(args.sortie) if args.sortie else source.parent / f"Glossaire_{gamme}.xlsx"
+    if sortie.exists():
+        dire(f"Refus : {sortie.name} existe déjà. Un seul maître par gamme : fusionner avec "
+             f"« importer {source.name} --dans {sortie.name} », onglet par onglet (--feuille).")
+        return 2
+    voisins = [v for v in maitres_voisins(sortie, gamme) if v.resolve() != source.resolve()]
+    if voisins:
+        dire("Refus : un autre glossaire de cette gamme existe déjà : " + ", ".join(v.name for v in voisins))
+        return 2
+    feuilles = lire_source(source, None)
+    termes, compte, histoire, ignorees, doublons = [], [], [], [], 0
+    vus = {}
+    for nom, lignes in feuilles.items():
+        k = M.cle_entete(nom)
+        remplies = sum(1 for l in lignes if any(str(c).strip() for c in l))
+        if k in ONGLETS_HISTOIRE:
+            for l in lignes[1:]:
+                cel = [M.nfc(str(c)).strip() for c in l] + ["", "", "", ""]
+                if any(cel[:4]):
+                    histoire.append({"DATE": M.date_texte(cel[0]) or cel[0], "VERSION": cel[1], "ID": "—", "EN": "—",
+                                     "CHAMP": "historique v2.0", "AVANT": "", "APRÈS": cel[2],
+                                     "RAISON": cel[3], "DÉCIDÉ PAR": ""})
+            compte.append((nom, f"historique : {len(histoire)} lignes reprises au CHANGELOG"))
+            continue
+        if k in ONGLETS_SANS_TERMES:
+            ignorees.append((nom, remplies, "notice, pas de termes"))
+            continue
+        i, corresp = detecter(lignes, {})
+        if i is None:
+            ignorees.append((nom, remplies, "pas d'en-tête anglais/français"))
+            continue
+        ts, _ = termes_de_feuille(nom, lignes, i, corresp, args, source.name)
+        repris = 0
+        for t in ts:
+            st = M.valeur_canonique("STATUT", t.get("_statut_src", "")) if t.get("_statut_src") else None
+            if M.cle_entete(nom) == "EN ATTENTE":
+                st = "À confirmer"
+            t["STATUT"] = st or "Brouillon"
+            t["SOURCE"] = f"glossaire v2.0 {source.name}, onglet {nom}" + (" (statut repris)" if st else "")
+            if M.cle_entete(nom) in ("HERITE",):
+                t["NOTES"] = joindre_notes("Repris de l'onglet HÉRITÉ (glossaire de la boîte de base)", t["NOTES"])
+            cle = (M.cle(t["EN"]), M.cle(t["FR"]))
+            if cle in vus:
+                doublons += 1
+                vus[cle]["NOTES"] = joindre_notes(vus[cle]["NOTES"], f"aussi dans l'onglet {nom}")
+                continue
+            vus[cle] = t
+            termes.append(t)
+            repris += 1
+        compte.append((nom, f"{repris} termes repris (en-tête ligne {i + 1})"))
+    for k, t in enumerate(termes, start=1):
+        t["ID"] = f"T-{k:04d}"
+    dire(f"Migration de {source.name} (glossaire v2.0) vers {sortie.name} :")
+    for nom, txt in compte:
+        dire(f"  onglet « {nom} » : {txt}")
+    for nom, nb, pourquoi in ignorees:
+        dire(f"  onglet « {nom} » : non lu ({nb} lignes remplies) — {pourquoi}")
+    dire(f"  doublons exacts entre onglets (même anglais, même français), gardés une fois : {doublons}")
+    par_statut = {}
+    for t in termes:
+        par_statut[t["STATUT"]] = par_statut.get(t["STATUT"], 0) + 1
+    dire("  statuts après migration : " + ", ".join(f"{s} {n}" for s, n in sorted(par_statut.items())))
+    dire(f"  L'ancien fichier {source.name} n'est ni modifié ni déplacé. Une fois le nouveau vérifié, Hervé le range "
+         f"lui-même dans Core/Archives/ (deux maîtres pour une gamme, c'est deux vérités).")
+    ch = histoire + [{"DATE": M.aujourdhui(), "VERSION": "3.0", "ID": f"T-0001 à T-{len(termes):04d}" if termes else "—",
+                      "EN": "—", "CHAMP": "migration v2.0 → v3", "AVANT": source.name,
+                      "APRÈS": f"{len(termes)} termes, statuts repris", "RAISON": "mise à jour d'AURA",
+                      "DÉCIDÉ PAR": args.par or ""}]
+    return ecrire_ou_essai(args, sortie, gamme, termes, ch, existe=False)
 
 
 # ------------------------------------------------------------------ modifier
@@ -725,11 +822,70 @@ def auto_test():
         avant = len(list((racine / "Core" / "Archives").iterdir()))
         code, _ = lancer("modifier", str(g), "--id", "T-0001", "--champ", "NOTES=x", "--ecrire")
         verifier(code == 2 and len(list((racine / "Core" / "Archives").iterdir())) == avant, "fichier ouvert dans Excel non détecté")
+    # ---- migration d'un glossaire v2.0 (6 onglets, statuts validés avec Hervé)
+    with tempfile.TemporaryDirectory() as d:
+        gl = Path(d) / "HERVÉ WORLD" / "Glossaires"
+        gl.mkdir(parents=True)
+        v2 = gl / "GLOSSAIRE_TG_v2.3.xlsx"
+        tete = ["TERME_EN", "TERME_FR", "CATÉGORIE", "CONTEXTE", "STATUT", "PROJET_ORIGINE", "VERSION", "NOTES"]
+        _xlsx_simple(v2, {
+            "GLOSSAIRE_TG": [tete, ["Shard", "Éclat", "OBJET", "Gain 1 Shard", "Confirmé", "base", "v1", ""],
+                             ["Exhaust", "Épuiser", "MÉCANIQUE", "Exhaust a card", "Gelé", "base", "v2", ""],
+                             ["Rest", "Repos", "MÉCANIQUE", "", "Brouillon", "base", "v1", ""]],
+            "EN_ATTENTE": [tete, ["Wyrm", "Guivre", "LORE", "", "Brouillon", "ext1", "v1", "attente éditeur"]],
+            "EXTENSION": [tete, ["Sanctum", "Sanctuaire", "LIEU", "", "Confirmé", "ext1", "v1", ""],
+                          ["Dread", "Effroi", "MÉCANIQUE", "", "À confirmer", "ext1", "v1", ""]],
+            "HÉRITÉ": [tete, ["Shard", "Éclat", "OBJET", "", "Confirmé", "base", "v1", ""]],
+            "CHANGELOG": [["Date", "Version", "Nature", "Raison"], ["2026-06-02", "v2.2", "Shard validé", "Hervé"],
+                          ["2026-06-09", "v2.3", "Exhaust gelé", "impression"]],
+            "LISEZMOI": [["Glossaire de la gamme TG — à lire avant tout partage"]],
+        })
+        octets_v2 = v2.read_bytes()
+        cible = gl / "Glossaire_TG.xlsx"
+        code, out = lancer("migrer", str(v2), "--gamme", "TG", "--ecrire")
+        verifier(code == 0 and cible.exists(), f"migration v2.0 refusée : {out[-300:]}")
+        verifier(v2.read_bytes() == octets_v2, "la migration a modifié l'ancien glossaire v2.0")
+        if cible.exists():
+            lu = M.lire_glossaire(cible)
+            st = {t["EN"]: t["STATUT"] for t in lu["termes"]}
+            verifier(M.nombre_termes(lu["termes"]) == 6, f"migration : 6 termes attendus, {M.nombre_termes(lu['termes'])} lus")
+            verifier(st.get("Shard") == "Confirmé" and st.get("Exhaust") == "Gelé" and st.get("Sanctum") == "Confirmé",
+                     f"migration : statuts validés perdus {st}")
+            verifier(st.get("Wyrm") == "À confirmer", "migration : terme EN_ATTENTE pas « À confirmer »")
+            verifier("Sanctum" in st and "Dread" in st, "migration : l'onglet EXTENSION a été perdu")
+            verifier(len(lu["changelog"]) == 3, f"migration : historique v2.0 non repris ({len(lu['changelog'])} lignes)")
+        verifier("doublons exacts entre onglets (même anglais, même français), gardés une fois : 1" in out,
+                 "migration : doublon HÉRITÉ non signalé")
+        verifier("« LISEZMOI » : non lu" in out, "migration : onglet sans termes non déclaré")
+        code, out = lancer("migrer", str(v2), "--gamme", "TG", "--ecrire")
+        verifier(code == 2, "migration rejouée par-dessus un maître existant acceptée")
+        # l'import ordinaire nomme les feuilles qu'il ne lit pas
+        code, out = lancer("importer", str(v2), "--gamme", "Autre", "--sortie", str(Path(d) / "x.xlsx"))
+        verifier("FEUILLE NON LUE : « EXTENSION »" in out, "l'import tait les feuilles qu'il ne lit pas")
     if echecs:
         print("AUTO-TEST ÉCHEC : " + " ; ".join(echecs))
         return 1
-    print("AUTO-TEST OK — import en Brouillon, essai sans écriture, 5 refus, validation, CHANGELOG, sauvegarde, verrou")
+    print("AUTO-TEST OK — import en Brouillon, essai sans écriture, 5 refus, validation, CHANGELOG, sauvegarde, verrou ; "
+          "migration v2.0 : 6 onglets, statuts repris, historique repris, ancien fichier intact, feuilles non lues nommées")
     return 0
+
+
+def _xlsx_simple(chemin, feuilles):
+    """Un .xlsx minimal (texte en ligne) pour les essais — bibliothèque standard seulement."""
+    import zipfile
+    from xml.sax.saxutils import escape
+    noms = list(feuilles)
+    with zipfile.ZipFile(chemin, "w") as z:
+        z.writestr("[Content_Types].xml", '<?xml version="1.0" encoding="UTF-8"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="xml" ContentType="application/xml"/><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/></Types>')
+        z.writestr("xl/workbook.xml", '<workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"><sheets>'
+                   + "".join(f'<sheet name="{escape(n)}" sheetId="{i}" r:id="rId{i}"/>' for i, n in enumerate(noms, 1)) + "</sheets></workbook>")
+        z.writestr("xl/_rels/workbook.xml.rels", '<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">'
+                   + "".join(f'<Relationship Id="rId{i}" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/s{i}.xml"/>' for i in range(1, len(noms) + 1)) + "</Relationships>")
+        for i, n in enumerate(noms, 1):
+            lignes = "".join(f'<row r="{r}">' + "".join(f'<c r="{chr(65 + c)}{r}" t="inlineStr"><is><t>{escape(str(v))}</t></is></c>'
+                                                          for c, v in enumerate(l) if str(v) != "") + "</row>"
+                             for r, l in enumerate(feuilles[n], 1))
+            z.writestr(f"xl/worksheets/s{i}.xml", f'<worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><sheetData>{lignes}</sheetData></worksheet>')
 
 
 def main():
@@ -754,6 +910,11 @@ def main():
     i.add_argument("--feuille")
     i.add_argument("--colonne", action="append", help="CIBLE=En-tête source (ex. EN=Terme anglais)")
     i.add_argument("--garder-seuls", action="store_true", help="importer aussi les lignes où seul l'anglais est rempli")
+    mg = sp.add_parser("migrer", parents=[commun], help="convertir un glossaire v2.0 (tous ses onglets) au format v3")
+    mg.add_argument("source")
+    mg.add_argument("--gamme", required=True)
+    mg.add_argument("--sortie")
+    mg.set_defaults(garder_seuls=False, provenance=None, feuille=None, colonne=None)
     m = sp.add_parser("modifier", parents=[commun])
     m.add_argument("maitre")
     m.add_argument("--id")
@@ -777,7 +938,7 @@ def main():
     s.add_argument("maitre")
     a = p.parse_args()
     try:
-        return {"creer": cmd_creer, "importer": cmd_importer, "modifier": cmd_modifier, "exporter": cmd_exporter,
+        return {"creer": cmd_creer, "importer": cmd_importer, "migrer": cmd_migrer, "modifier": cmd_modifier, "exporter": cmd_exporter,
                 "retours": cmd_retours, "comparer": cmd_comparer, "sauvegarder": cmd_sauvegarder}[a.cmd](a)
     except (FileExistsError, PermissionError, ValueError, FileNotFoundError) as e:
         dire(f"Refus : {e}")
