@@ -1,0 +1,60 @@
+{
+ "version": "3.0",
+ "regle": "La mise à jour écrit SEULEMENT les fichiers de « systeme_local » et l'amorce CLAUDE.md, et CRÉE les fichiers de « graines » qui n'existent pas encore. Elle ne modifie jamais un fichier existant de la couche mémoire.",
+ "amorce": "CLAUDE.md",
+ "version_locale": "Core/VERSION.md",
+ "systeme_local": [
+  "Core/Skills.md",
+  "GUIDE_AURA.md",
+  "skills/_ANCIENNE_VERSION_LIRE_MOI.md"
+ ],
+ "graines": [
+  "Core/Archives/LISEZ-MOI.md",
+  "Core/Gammes/LISEZ-MOI.md",
+  "Core/ONBOARDING.md",
+  "Core/Observations.md",
+  "Core/Outils_Perso.md",
+  "Core/Questions_Editeurs.md",
+  "Core/Sessions/LISEZ-MOI.md",
+  "Core/Suivi.md",
+  "Core/_EN_COURS.md",
+  "Glossaires/LISEZ-MOI.md",
+  "Livrables/LISEZ-MOI.md",
+  "Références/Segments/LISEZ-MOI.md"
+ ],
+ "bandeau_fictif": "Simulation_Onboarding_Herve.md",
+ "memoire": {
+  "dossiers": [
+   "Glossaires/",
+   "Références/",
+   "Livrables/",
+   "IMPORT/"
+  ],
+  "exceptions_core": [
+   "Core/VERSION.md",
+   "Core/Skills.md"
+  ]
+ },
+ "ligne_instructions": "Quand je travaille dans mon dossier HERVÉ WORLD, commence toujours par lire le fichier CLAUDE.md de ce dossier et applique-le.",
+ "empreintes_v2": {
+  "CLAUDE.md": {
+   "lignes": 630,
+   "premiere_ligne": "# AURA — Assistant personnel de Hervé",
+   "derniere_ligne_commence_par": "*AURA Hervé — v2.0"
+  },
+  "Core/Skills.md": {
+   "lignes": 98,
+   "premiere_ligne": "---",
+   "derniere_ligne_commence_par": "*Mettre à jour quand un nouveau skill est créé"
+  }
+ },
+ "skills_v2": [
+  "brief-editeur",
+  "comprehension-regles",
+  "glossaire",
+  "narration-jeux",
+  "qa-coherence",
+  "relecture-multi-agents",
+  "traduction-jeux"
+ ]
+}
