@@ -2,6 +2,10 @@
 
 Les nouveautés expliquées à l'utilisateur sont dans `skills/mise-a-jour/references/systeme/GUIDE_AURA.md` (seul endroit). Ce fichier est le journal technique.
 
+## 3.0.3 — 2026-10-04
+- Installation par fichier (Customize > Plugins > Add > Upload plugin) : le contrôle du téléversement refuse toute description de skill qui contient des chevrons, pris pour des balises XML. Quatre descriptions en avaient (« Glossaire_<Gamme> », « <Éditeur> », « <Gamme> », « <b> ») : elles sont réécrites sans chevrons, et l'atelier contrôle désormais chaque en-tête avant de fabriquer un fichier.
+- Mise à jour : le guide `GUIDE_AURA.md`, la carte `Core/Skills.md` et le skill disent les deux chemins des nouvelles versions — toutes seules depuis la source de Dorian, par un nouveau fichier zip si le plugin a été installé depuis un fichier (c'est le cas d'Hervé depuis le 04/10). Un dossier déjà passé en 3.0 garde l'ancien texte jusqu'à la prochaine version qui change sa couche locale.
+
 ## 3.0.2 — 2026-10-04
 - Mise à jour d'un dossier déjà commencé : la note de passage `Core/PASSAGE_V3.md`, écrite par l'AURA de la version 2.0 à partir du fichier `skills/mise-a-jour/references/passage-v2-vers-v3.md` que Dorian lui donne, fixe l'étape où reprendre la mise en place (plus de question si elle est lisible).
 - Preuve de conservation : `scripts/releve.py` relève chaque fichier du dossier avant la première écriture, le compare octet pour octet après, et écrit `_archives-systeme/PREUVE_MISE_A_JOUR_AAAA-MM-JJ.md` ; le compte rendu montre « MÉMOIRE INTACTE » et la liste des fichiers vérifiés.

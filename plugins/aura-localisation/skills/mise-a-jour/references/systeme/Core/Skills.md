@@ -1,7 +1,7 @@
 # Les outils d'AURA
 > Fichier de la couche système, réécrit par AURA MISE À JOUR. Tes outils sur mesure sont dans `Core/Outils_Perso.md`.
 
-Depuis la version 3.0, les outils d'AURA viennent du **plugin AURA** (nom technique : aura-localisation), installé sur ton compte Claude ; ce que Dorian publie y arrive par la synchronisation automatique (voir `GUIDE_AURA.md`). Tu n'as jamais besoin de les nommer : AURA choisit le bon selon ce que tu lui demandes.
+Depuis la version 3.0, les outils d'AURA viennent du **plugin AURA** (nom technique : aura-localisation), installé sur ton compte Claude ; ses nouvelles versions arrivent toutes seules s'il vient de la source de Dorian, ou par un nouveau fichier que Dorian t'envoie s'il a été installé depuis un fichier (voir `GUIDE_AURA.md`). Tu n'as jamais besoin de les nommer : AURA choisit le bon selon ce que tu lui demandes.
 
 | Ce que tu demandes | Ce qu'AURA fait |
 |---|---|

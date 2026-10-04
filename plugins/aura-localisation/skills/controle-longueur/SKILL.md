@@ -1,6 +1,6 @@
 ---
 name: controle-longueur
-description: "Contrôle, carte par carte ou ligne par ligne, de la longueur du texte français face à l'anglais (expansion, débord du cadre de texte, maximum fixé par l'éditeur ou le maquettiste) et de l'intégrité de chaque traduction : balises et icônes ({icone}, <b>, [degats]) présentes et identiques, nombres identiques, aucune traduction vide. Fonctionne sur un tableur de cartes (Excel, CSV) ou deux Word alignés. Propose des raccourcissements qui gardent la mécanique. À utiliser pour « ça déborde », « c'est trop long », « vérifie les longueurs », « les balises », « les icônes », « les chiffres des cartes », avant un BAT."
+description: "Contrôle, carte par carte ou ligne par ligne, de la longueur du texte français face à l'anglais (expansion, débord du cadre de texte, maximum fixé par l'éditeur ou le maquettiste) et de l'intégrité de chaque traduction : balises et icônes ({icone}, balises de mise en forme comme b ou i, [degats]) présentes et identiques, nombres identiques, aucune traduction vide. Fonctionne sur un tableur de cartes (Excel, CSV) ou deux Word alignés. Propose des raccourcissements qui gardent la mécanique. À utiliser pour « ça déborde », « c'est trop long », « vérifie les longueurs », « les balises », « les icônes », « les chiffres des cartes », avant un BAT."
 ---
 
 # Longueur, débord et intégrité des cartes
