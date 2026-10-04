@@ -2,6 +2,10 @@
 
 Les nouveautés expliquées à l'utilisateur sont dans `skills/mise-a-jour/references/systeme/GUIDE_AURA.md` (seul endroit). Ce fichier est le journal technique.
 
+## 3.0.2 — 2026-10-04
+- Mise à jour d'un dossier déjà commencé : la note de passage `Core/PASSAGE_V3.md`, écrite par l'AURA de la version 2.0 à partir du fichier `skills/mise-a-jour/references/passage-v2-vers-v3.md` que Dorian lui donne, fixe l'étape où reprendre la mise en place (plus de question si elle est lisible).
+- Preuve de conservation : `scripts/releve.py` relève chaque fichier du dossier avant la première écriture, le compare octet pour octet après, et écrit `_archives-systeme/PREUVE_MISE_A_JOUR_AAAA-MM-JJ.md` ; le compte rendu montre « MÉMOIRE INTACTE » et la liste des fichiers vérifiés.
+
 ## 3.0.1 — 2026-10-02
 Relecture adverse de 55 points de la 3.0.0, chacun contre-vérifié par un relecteur indépendant (53 corrigés, 2 limites assumées et écrites : R-34, R-35).
 - Mise à jour : empreinte exacte des fichiers d'origine (taille, sha256, lignes témoins), liste des fichiers écrits recopiée en entier au compte rendu, rien n'est écrit dans un dossier sans `Core/VERSION.md`, branche « question de version » en lecture seule, vocabulaire « le plugin AURA » et « conversation », gestes « Check for updates » justes, commande acceptée sans accent ; la couche système est toujours écrite puis vérifiée sur son contenu (et non plus seulement sa présence), et seuls les fichiers vus dans une vraie liste du dossier sont cités (deux défauts trouvés par le test réel).

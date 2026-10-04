@@ -15,7 +15,7 @@ Si Hervé demande seulement où en est AURA (« quelle version d'AURA ? », « A
 ## La règle d'or — à relire avant chaque écriture
 `references/couches.json` donne les chemins ; cette règle dit ce que tu as le droit d'en faire. Elle n'est écrite qu'ici.
 - **Tu remplaces** seulement : l'amorce `CLAUDE.md`, les fichiers de `systeme_local`, et `Core/VERSION.md` quand la version change. Avant de remplacer `CLAUDE.md` ou `Core/Skills.md`, l'étape 4 dit s'il faut d'abord en garder une copie.
-- **Tu crées, seulement s'ils n'existent pas** (vérifié juste avant) : les fichiers de `graines` ; les fichiers de `systeme_si_dossier_present`, et seulement si leur dossier existe déjà ; les copies de l'étape 4 dans `_archives-systeme/`. Un fichier qui existe, tu n'y touches pas, même s'il est vide.
+- **Tu crées, seulement s'ils n'existent pas** (vérifié juste avant) : les fichiers de `graines` ; les fichiers de `systeme_si_dossier_present`, et seulement si leur dossier existe déjà ; dans `_archives-systeme/`, les copies de l'étape 4, le relevé « avant » et la preuve écrits par `scripts/releve.py`. Un fichier qui existe, tu n'y touches pas, même s'il est vide.
 - **Une seule exception** à « aucun fichier existant n'est modifié » : le document de démonstration de la version 2.0 nommé par `bandeau_fictif` reçoit une ligne d'avertissement **en tête**, une seule fois, et rien d'autre (étape 5).
 - **Tout le reste, tu ne le modifies, ne le réécris, ne le déplaces et ne le supprimes jamais** : la couche mémoire (`Core/` sauf `Core/VERSION.md` et `Core/Skills.md`, puis `Glossaires/`, `Références/`, `Livrables/`, `IMPORT/`), les sous-dossiers de `skills/`, et tout autre fichier. Pas même pour y ajouter une ligne : la mise à jour ne laisse aucune trace dans la mémoire existante ; le prochain AURA SAVE la notera au Journal.
 - Si quelque chose t'oblige à sortir de cette règle, tu t'arrêtes et tu expliques à Hervé ; tu ne contournes pas.
@@ -38,7 +38,12 @@ Le dossier connecté doit contenir `CLAUDE.md` et `Core/CONTEXT.md`. Sinon : arr
 
 Si la version est 3.0 et l'amorce porte la marque, mais qu'un fichier de `systeme_local` ou une graine manque : tu recrées **seulement ce fichier-là** et tu le dis (« J'ai recréé Core/Suivi.md, qui manquait »). Tu ne réécris ni `Core/VERSION.md` ni rien d'autre, et tu ne recrées pas `skills/`. <!-- [R-21] -->
 
+### 2 bis. Le relevé « avant » — avant ta PREMIÈRE écriture
+Si la mise à jour va écrire (ce n'est pas « déjà à jour ») et qu'un programme voit ton dossier (étape 0 de la règle des programmes, skill `noyau`) : `python3 "${CLAUDE_SKILL_DIR}/scripts/releve.py" avant "<chemin complet de HERVÉ WORLD>"`. Il relève la taille et l'empreinte de chaque fichier du dossier, dans `_archives-systeme/`. Rien ne s'écrit avant ce relevé : sans lui, la preuve de l'étape 7 est impossible. Si aucun programme ne voit le dossier, tu continues sans relevé et tu le diras au compte rendu.
+
 ### 3. L'état de la mise en place (seulement si `Core/ONBOARDING.md` n'existe pas) — sans deviner
+**Une note de passage d'abord.** Si `Core/PASSAGE_V3.md` existe, c'est l'AURA de la version 2.0 qui l'a écrite juste avant la mise à jour, à la demande de Dorian, au milieu de la mise en place (fichier `references/passage-v2-vers-v3.md`). Elle sait mieux que toi où il en est : tu la lis (sans jamais la modifier, c'est sa mémoire) et tu en reprends l'étape atteinte. « terminée » → `statut: terminé` ; une étape de la version 2.0 → `statut: en cours` et `étape en cours:` son identifiant de la version 3.0 (`correspondance_etapes_v2_v3`) ; tu ajoutes `repris de: Core/PASSAGE_V3.md du AAAA-MM-JJ`. Tu ne poses pas la question ci-dessous : au compte rendu, tu montres ce que tu en as repris (étape, ce qui est fait, ce qui reste) et tu lui demandes seulement de te dire si c'est juste. Si la note ne donne pas d'étape lisible, tu fais comme s'il n'y en avait pas.
+Sans note de passage :
 Compare `Core/Profile.md` à son empreinte d'origine (section « Comparer à l'empreinte d'origine », juste après) et compte les sessions du Journal (`## Session …`).
 - Profil **identique à l'origine** ET **une seule** session au Journal → la mise en place n'a pas commencé : `statut: non commencé`, `étape en cours: ACCUEIL`.
 - Sinon, tu **ne devines pas** l'étape : un profil pré-rempli par Dorian ressemble à un profil commencé, et une mise en place finie ressemble à une mise en place en cours. Tu écris `statut: à confirmer` et `étape en cours: à confirmer avec Hervé`, puis en dessous `indices relevés le AAAA-MM-JJ : …` (profil modifié ou non, nombre de sessions, fiches éditeurs, glossaires). Au compte rendu, tu poses **une seule question** : « Ta mise en place est-elle terminée ? Sinon, à quelle étape t'es-tu arrêté ? », en lui rappelant les étapes de la version 2.0 qu'il a vues (`etapes_v2` dans `couches.json`). <!-- [R-04] --> <!-- [R-44] -->
@@ -94,6 +99,7 @@ Deux exceptions au contenu des graines, et seulement à leur création : `Core/O
 - Chaque fichier de `graines` existe.
 - **Aucun nom en double** : à la racine et dans chaque dossier où tu as créé quelque chose, aucun dossier ne s'affiche deux fois sous le même nom. Si c'est le cas, tu t'arrêtes, tu ne supprimes rien, et tu demandes à Hervé de prévenir Dorian.
 - Les fichiers de mémoire relevés à l'étape 2 sont tous encore là, sous le même nom ; les seuls noms nouveaux sont les graines que tu viens de créer (compare en les mettant à part).
+- **La preuve** (si le relevé « avant » a été fait) : `python3 "${CLAUDE_SKILL_DIR}/scripts/releve.py" apres "<chemin complet de HERVÉ WORLD>"`. Il compare chaque fichier au relevé, octet pour octet, et écrit `_archives-systeme/PREUVE_MISE_A_JOUR_AAAA-MM-JJ.md`. Il doit répondre « MÉMOIRE INTACTE » (code 0). Sinon (« ATTENTION », code 1), tu t'arrêtes, tu ne répares rien toi-même, tu montres sa réponse à Hervé et tu lui demandes de prévenir Dorian.
 Si une vérification échoue, tu le dis tel quel, sans conclure « c'est fait ».
 
 ### 8. Le compte rendu à Hervé
@@ -103,7 +109,8 @@ Remplacé : [chaque fichier de la couche système réellement écrit à l'étape
 Créé : [chaque nouveau fichier de mémoire, avec ce qu'il contient déjà : Core/ONBOARDING.md (l'état de ta mise en place), Core/Suivi.md (les fils ouverts à l'étape 3 bis), Core/Outils_Perso.md (n outils repris)… ; les autres sont vides, prêts à servir]
 Ajouté : [la ligne d'avertissement en tête de Simulation_Onboarding_Herve.md — ou « rien »]
 Conservé : [les copies faites dans _archives-systeme/ ; les outils sur mesure repris dans Core/Outils_Perso.md — ou « rien à conserver »]
-Ta mémoire : [N] fichiers, tous encore là sous le même nom ; je n'en ai ouvert aucun pour y écrire (je ne peux pas te le prouver octet par octet).
+Ta mémoire : [avec le relevé] « MÉMOIRE INTACTE : [N] fichiers de ta mémoire vérifiés octet pour octet avant et après la mise à jour, tous identiques. La preuve, fichier par fichier : _archives-systeme/PREUVE_MISE_A_JOUR_AAAA-MM-JJ.md » (recopie la réponse du programme, puis la liste des fichiers de sa mémoire qu'il a vérifiés, en une ligne : « Profile, Journal, Tasks… ») — [sans relevé] « [N] fichiers, tous encore là sous le même nom ; je n'en ai ouvert aucun pour y écrire. Aucun programme ne voyait ton dossier : je ne peux pas te le prouver octet par octet. »
+Ta mise en place : [avec une note de passage] « D'après ta note de passage du AAAA-MM-JJ, tu en étais à l'étape [X] : [ce qui est fait] ; il reste [ce qui reste]. Je reprends là. C'est bien ça ? » — [sinon] la question de l'étape 3.
 Ce qui change pour toi : [3 lignes tirées du guide, section « Ce qui a changé »]
 ```
 Puis, une seule fois chacune, les suites utiles :

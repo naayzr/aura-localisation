@@ -1,6 +1,6 @@
 {
   "name": "aura-localisation",
-  "version": "3.0.1",
+  "version": "3.0.2",
   "description": "AURA pour la traduction et la localisation de jeux de société (anglais → français) : mémoire de travail dans le dossier de l'utilisateur, glossaires par gamme, typographie française, comptage de caractères, longueurs et balises des cartes, relecture, relations éditeurs, gestion de gamme.",
   "author": { "name": "Dorian" },
   "keywords": ["traduction", "localisation", "jeux de société", "glossaire", "typographie", "cowork"]
