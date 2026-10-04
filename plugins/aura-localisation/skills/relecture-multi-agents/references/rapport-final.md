@@ -18,15 +18,15 @@ FIN DU RAPPORT
 **Pour un contrôle par script**, le rapport contient la sortie **réelle** du script, recopiée par l'ordinateur et non retapée. Exemple pour les renvois :
 ```
 { echo "RAPPORT controle-renvois"; echo "Fichier : <fichier>"; \
-  python3 <dossier du skill qa-coherence>/scripts/renvois.py <fichier> --source <version originale>; \
+  python3 "${CLAUDE_SKILL_DIR}/../qa-coherence/scripts/renvois.py" "<fichier>" --source "<version originale>"; \
   echo "Constats : <nombre lu sur la ligne BILAN>"; echo "Zones non lues : <…>"; \
-  echo "FIN DU RAPPORT"; } > Livrables/<Projet>/relecture/controle-renvois.md
+  echo "FIN DU RAPPORT"; } > "<HERVÉ WORLD>/Livrables/<Projet>/relecture/controle-renvois.md"
 ```
 Même principe pour les scripts des skills `typographie-fr`, `controle-longueur`, `glossaire` et `comptage-caracteres`. Un script qui n'a pas tourné ne laisse **aucun** fichier : c'est ce qui permet à `rapports.py` de le voir manquer.
 
 ## 2. La synthèse finale <!-- [I-29] -->
 
-Elle s'écrit **après** `python3 scripts/rapports.py <dossier de relecture>`, et en reprend les chiffres tels quels.
+Elle s'écrit **après** `python3 "${CLAUDE_SKILL_DIR}/scripts/rapports.py" <dossier de relecture>`, et en reprend les chiffres tels quels.
 
 ```
 ═══════════════════════════════════════════════════════

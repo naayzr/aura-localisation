@@ -5,19 +5,25 @@ Bibliothèque standard uniquement. Aucune valeur n'est supposée : la capacité 
 par jour ouvré) et la durée de chaque étape sont OBLIGATOIRES. S'il en manque, le script s'arrête et
 dit lesquelles demander à Hervé. Une étape qui n'existe pas sur ce produit se déclare à 0.
 
-Chaîne (dans l'ordre) : réception des sources → traduction → relecture → réponses aux questions →
-mise en page → BAT1 → BAT2 → fichiers d'impression → remise à l'imprimeur. La FAQ se place après la
-remise, hors calcul.
+Chaîne (dans l'ordre) : réception des sources → traduction → réponses aux dernières questions de
+l'éditeur et intégration (le relecteur lit un texte où elles sont déjà reportées) → relecture → mise en
+page → BAT1 → BAT2 → validation de la VF par l'éditeur de la VO ou l'ayant droit (licence, co-édition) →
+fichiers d'impression → remise à l'imprimeur. La FAQ se place après la remise, hors calcul.
+Une étape propre à ce produit s'ajoute avec --etape "Nom:jours:après", où « après » est l'étape qui la
+précède (traduction, questions, relecture, mise-en-page, bat1, bat2, validation-vo, fichiers) ; l'option
+se répète.
 
 Exemple :
   python3 retroplanning.py --produit "Extension 2" --remise 2027-03-15 --caracteres 320000 \\
-      --capacite 12000 --relecture 8 --questions 5 --mise-en-page 10 --bat1 5 --bat2 3 --fichiers 2 \\
-      --debut 2026-11-02 --feries-fr --indispo 2026-12-24:2027-01-01
+      --capacite 12000 --questions 5 --relecture 8 --mise-en-page 10 --bat1 5 --bat2 3 --validation-vo 10 \\
+      --fichiers 2 --debut 2026-11-02 --feries-fr --indispo 2026-12-24:2027-01-01 \\
+      --etape "Relecture de l'auteur:3:relecture"
   python3 retroplanning.py --auto-test
 
 --auto-test : refait des rétroplannings dont les dates ont été calculées à la main sur le calendrier
-(jours fériés français, indisponibilités, remise un dimanche) ; il doit retrouver chaque date, dire
-« menacé » ou « marge faible » quand c'est le cas, et rien de tel quand le jalon tient.
+(jours fériés français, indisponibilités, remise un dimanche, validation par l'ayant droit, étape
+ajoutée) ; il doit retrouver chaque date, dire « menacé » ou « marge faible » quand c'est le cas, et
+rien de tel quand le jalon tient. --sortie ne remplace jamais un fichier existant.
 
 Codes de sortie : 0 calcul fait (tenable ou menacé) ; 1 auto-test en échec ; 2 information manquante
 ou invalide.
@@ -30,12 +36,16 @@ import sys
 from datetime import date, timedelta
 from pathlib import Path
 
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from commun import sortie_libre, ecrire_sortie  # noqa: E402
+
 ETAPES = [  # (option, libellé) dans l'ordre de la chaîne ; la traduction est calculée à part
+    ("questions", "Réponses aux dernières questions de l'éditeur et intégration"),
     ("relecture", "Relecture"),
-    ("questions", "Réponses aux questions de l'éditeur et intégration"),
     ("mise_en_page", "Mise en page"),
     ("bat1", "BAT1 : relecture de la 1re épreuve et retours"),
     ("bat2", "BAT2 : vérification de la 2e épreuve"),
+    ("validation_vo", "Validation de la VF par l'éditeur de la VO ou l'ayant droit"),
     ("fichiers", "Fichiers d'impression"),
 ]
 LIBELLES_OPTIONS = {
@@ -43,7 +53,10 @@ LIBELLES_OPTIONS = {
     "caracteres": "volume total à traduire, en caractères espaces comprises, compté sur le fichier (--caracteres)",
     "capacite": "capacité de traduction d'Hervé, en caractères par jour ouvré (--capacite)",
     "relecture": "durée de la relecture, en jours ouvrés (--relecture)",
-    "questions": "délai de réponse de l'éditeur aux questions + intégration, en jours ouvrés (--questions)",
+    "questions": "délai de réponse de l'éditeur aux dernières questions + intégration avant la relecture, "
+                 "en jours ouvrés (--questions)",
+    "validation_vo": "durée de la validation de la version française par l'éditeur de la version originale ou "
+                     "l'ayant droit (licence, co-édition), en jours ouvrés (--validation-vo ; 0 si personne ne valide)",
     "mise_en_page": "durée de la mise en page, en jours ouvrés (--mise-en-page)",
     "bat1": "durée du cycle BAT1, en jours ouvrés (--bat1)",
     "bat2": "durée du cycle BAT2, en jours ouvrés (--bat2)",
@@ -164,19 +177,41 @@ def auto_test():
     commun = ["--produit", "Essai", "--remise", "2027-03-15", "--caracteres", "320000",
               "--relecture", "8", "--questions", "5", "--mise-en-page", "10", "--bat1", "5", "--bat2", "3",
               "--fichiers", "2", "--feries-fr", "--indispo", "2026-12-24:2027-01-01", "--aujourdhui", "2026-10-01"]
-    base = commun + ["--capacite", "12000"]
+    base = commun + ["--capacite", "12000", "--validation-vo", "0"]
+    licence = commun + ["--capacite", "12000", "--validation-vo", "10", "--debut", "2026-11-02",
+                        "--etape", "Relecture de l'auteur:3:relecture"]
     cas = [
         # (nom, options, code attendu, morceaux qui doivent apparaître, morceaux qui ne doivent pas apparaître)
         ("calendrier et jalon tenable", base + ["--debut", "2026-11-02"], 0,
          ["| Traduction (320000 caractères à 12000 par jour) | vendredi 11/12/2026 | mercredi 27/01/2027 | 27 |",
-          "| Relecture | jeudi 28/01/2027 | lundi 08/02/2027 | 8 |",
-          "| Réponses aux questions de l'éditeur et intégration | mardi 09/02/2027 | lundi 15/02/2027 | 5 |",
+          "| Réponses aux dernières questions de l'éditeur et intégration | jeudi 28/01/2027 | mercredi 03/02/2027 | 5 |",
+          "| Relecture | jeudi 04/02/2027 | lundi 15/02/2027 | 8 |",
           "| Mise en page | mardi 16/02/2027 | lundi 01/03/2027 | 10 |",
           "| BAT1 : relecture de la 1re épreuve et retours | mardi 02/03/2027 | lundi 08/03/2027 | 5 |",
           "| BAT2 : vérification de la 2e épreuve | mardi 09/03/2027 | jeudi 11/03/2027 | 3 |",
+          "| Validation de la VF par l'éditeur de la VO ou l'ayant droit | — | — | 0 (sans objet) |",
           "| Fichiers d'impression | vendredi 12/03/2027 | lundi 15/03/2027 | 2 |",
           "**TENABLE** — début possible le lundi 02/11/2026, marge de 28 jour(s) ouvré(s)"],
          ["MENACÉ", "DÉPASSÉ", "Ligne à ajouter à Core/Suivi.md", "Marge de 2 jours ouvrés ou moins"]),
+        # gamme sous licence : 10 jours de validation par l'ayant droit et une étape ajoutée après la
+        # relecture ; chaque date comptée à la main (11/11/2026 férié, 24/12/2026 au 01/01/2027 indisponible)
+        ("validation par l'ayant droit et étape ajoutée", licence, 0,
+         ["| Traduction (320000 caractères à 12000 par jour) | mardi 24/11/2026 | vendredi 08/01/2027 | 27 |",
+          "| Réponses aux dernières questions de l'éditeur et intégration | lundi 11/01/2027 | vendredi 15/01/2027 | 5 |",
+          "| Relecture | lundi 18/01/2027 | mercredi 27/01/2027 | 8 |",
+          "| Relecture de l'auteur (étape ajoutée) | jeudi 28/01/2027 | lundi 01/02/2027 | 3 |",
+          "| Mise en page | mardi 02/02/2027 | lundi 15/02/2027 | 10 |",
+          "| BAT1 : relecture de la 1re épreuve et retours | mardi 16/02/2027 | lundi 22/02/2027 | 5 |",
+          "| BAT2 : vérification de la 2e épreuve | mardi 23/02/2027 | jeudi 25/02/2027 | 3 |",
+          "| Validation de la VF par l'éditeur de la VO ou l'ayant droit | vendredi 26/02/2027 | jeudi 11/03/2027 | 10 |",
+          "| Fichiers d'impression | vendredi 12/03/2027 | lundi 15/03/2027 | 2 |",
+          "**TENABLE** — début possible le lundi 02/11/2026, marge de 15 jour(s) ouvré(s)"],
+         ["MENACÉ", "Marge de 2 jours ouvrés ou moins"]),
+        ("validation par l'ayant droit non déclarée : refus, jamais supposée",
+         commun + ["--capacite", "12000", "--debut", "2026-11-02"], 2,
+         ["validation de la version française par l'éditeur de la version originale ou l'ayant droit"], ["| Traduction"]),
+        ("étape ajoutée après une étape inconnue : refus", base + ["--etape", "Traduction de la FAQ:4:imprimeur"], 2,
+         ["n'est pas une étape de la chaîne"], ["| Traduction"]),
         ("jalon menacé (indisponibilité de fin d'année)", base + ["--debut", "2027-01-04"], 0,
          ["**JALON MENACÉ** — début possible le lundi 04/01/2027 seulement : il manque 9 jour(s) ouvré(s).",
           "traduire 17778 caractères par jour ouvré au lieu de 12000 (sur 18 jours disponibles)",
@@ -189,8 +224,15 @@ def auto_test():
          ["**TENABLE** — début possible le jeudi 10/12/2026, marge de 1 jour(s) ouvré(s)",
           "Marge de 2 jours ouvrés ou moins", "Essai : marge faible"],
          ["MENACÉ"]),
-        ("capacité manquante : refus, jamais supposée", commun + ["--debut", "2026-11-02"], 2,
+        ("capacité manquante : refus, jamais supposée", commun + ["--validation-vo", "0", "--debut", "2026-11-02"], 2,
          ["capacité de traduction d'Hervé"], ["| Traduction"]),
+        ("rapport demandé dans le dossier du plugin : refus (il s'y perdrait)",
+         base + ["--sortie", str(Path(__file__).resolve().parent / "retroplanning_essai.md")], 2,
+         ["REFUS", "dossier du plugin AURA"], ["| Traduction"]),
+        ("déjà traduit négatif : refus (le reste à traduire grossirait)", base + ["--deja-traduits", "-50000"], 2,
+         ["--deja-traduits (-50000) doit être entre 0"], ["| Traduction"]),
+        ("déjà traduit au-delà du total : refus", base + ["--deja-traduits", "400000"], 2,
+         ["--deja-traduits (400000) doit être entre 0"], ["| Traduction"]),
     ]
     echecs = []
     for nom, argv, code_att, presents, absents in cas:
@@ -204,8 +246,8 @@ def auto_test():
             echecs.append(f"{nom} — non trouvé : {manquent} ; en trop : {en_trop}")
     # remise un dimanche, jours fériés de 2027 (Pâques le 28 mars) : comptés à la main
     code, texte = _lancer(["--remise", "2027-03-14", "--caracteres", "0", "--capacite", "1000", "--relecture", "0",
-                           "--questions", "0", "--mise-en-page", "0", "--bat1", "0", "--bat2", "0", "--fichiers", "1",
-                           "--feries-fr", "--aujourdhui", "2026-10-01"])
+                           "--questions", "0", "--mise-en-page", "0", "--bat1", "0", "--bat2", "0", "--validation-vo", "0",
+                           "--fichiers", "1", "--feries-fr", "--aujourdhui", "2026-10-01"])
     ok_dim = "(jour non travaillé : ramenée au vendredi 12/03/2027)" in texte and \
              "| Fichiers d'impression | vendredi 12/03/2027 | vendredi 12/03/2027 | 1 |" in texte
     print(f"  remise un dimanche : {'OK' if ok_dim else 'ÉCHEC'}")
@@ -218,12 +260,23 @@ def auto_test():
     print(f"  jours fériés 2027 : {'OK' if vus == feries_2027 else 'ÉCHEC'}")
     if vus != feries_2027:
         echecs.append(f"jours fériés 2027 : manquent {sorted(feries_2027 - vus)}, en trop {sorted(vus - feries_2027)}")
+    # --sortie ne remplace jamais un fichier existant (Livrables/ est la mémoire d'Hervé)
+    import tempfile
+    with tempfile.TemporaryDirectory() as d:
+        notes = Path(d) / "planning.md"
+        notes.write_text("PLANNING D'HERVÉ\n", encoding="utf-8")
+        code, texte = _lancer(base + ["--debut", "2026-11-02", "--sortie", str(notes)])
+        ok_s = code == 2 and "existe déjà" in texte and notes.read_text(encoding="utf-8") == "PLANNING D'HERVÉ\n"
+    print(f"  fichier existant jamais remplacé : {'OK' if ok_s else 'ÉCHEC'}")
+    if not ok_s:
+        echecs.append(f"--sortie sur un fichier existant : refus attendu, fichier intact (vu code {code})")
     if echecs:
         print("AUTO-TEST ÉCHOUÉ — " + " ; ".join(echecs) + ". Ne pas se fier à ce rétroplanning.")
         return 1
-    print("AUTO-TEST OK — dates comptées à la main toutes retrouvées (7 étapes, marge, retard et leviers, "
-          "remise un dimanche, 11 jours fériés 2027) ; jalon menacé, marge faible et capacité manquante "
-          "signalés ; 0 fausse alerte quand le jalon tient")
+    print("AUTO-TEST OK — dates comptées à la main toutes retrouvées (8 étapes, questions avant la relecture, "
+          "validation par l'ayant droit, étape ajoutée, marge, retard et leviers, remise un dimanche, 11 jours "
+          "fériés 2027) ; jalon menacé, marge faible, capacité et validation manquantes, étape inconnue et fichier "
+          "existant signalés ; 0 fausse alerte quand le jalon tient")
     return 0
 
 
@@ -238,16 +291,20 @@ def main():
     ap.add_argument("--capacite", type=int, help="caractères traduits par Hervé par jour ouvré (à lui demander)")
     for option, _ in ETAPES:
         ap.add_argument("--" + option.replace("_", "-"), type=int, dest=option, help="jours ouvrés (0 si l'étape n'existe pas)")
+    ap.add_argument("--etape", action="append", default=[],
+                    help="étape propre à ce produit : \"Nom:jours:après\" (après = traduction, questions, relecture, "
+                         "mise-en-page, bat1, bat2, validation-vo ou fichiers) ; se répète")
     ap.add_argument("--faq", type=int, help="jours ouvrés de FAQ après la remise (hors calcul, facultatif)")
     ap.add_argument("--debut", help="date à partir de laquelle Hervé peut traduire (sources reçues, ou aujourd'hui si déjà en cours)")
     ap.add_argument("--semaine", type=int, choices=(5, 6, 7), default=5, help="jours travaillés par semaine : 5 (lun-ven), 6 (lun-sam), 7")
     ap.add_argument("--feries-fr", action="store_true", help="exclut les 11 jours fériés nationaux français")
     ap.add_argument("--indispo", nargs="*", default=[], help="périodes non travaillées AAAA-MM-JJ:AAAA-MM-JJ")
     ap.add_argument("--aujourdhui", help="date du jour (tests) ; défaut : horloge de la machine")
-    ap.add_argument("--sortie", help="écrit le rétroplanning dans ce fichier .md")
+    ap.add_argument("--sortie", help="écrit le rétroplanning dans ce nouveau fichier .md (jamais un fichier existant)")
     ap.add_argument("--auto-test", action="store_true",
                     help="essai sur des rétroplannings comptés à la main (aucune autre option)")
     a = ap.parse_args()
+    sortie_libre(a.sortie)
 
     manquants = [LIBELLES_OPTIONS[k] for k in ["remise", "caracteres", "capacite"] + [o for o, _ in ETAPES]
                  if getattr(a, k) is None]
@@ -259,6 +316,8 @@ def main():
     negatifs = [o for o, _ in ETAPES if getattr(a, o) < 0] + (["caracteres"] if a.caracteres < 0 else [])
     if negatifs:
         arret(f"Valeurs négatives refusées : {', '.join(negatifs)}.")
+    if a.deja_traduits < 0 or a.deja_traduits > a.caracteres:
+        arret(f"--deja-traduits ({a.deja_traduits}) doit être entre 0 et le nombre de caractères ({a.caracteres}).")
     indispo = []
     for p in a.indispo:
         if ":" not in p:
@@ -271,11 +330,27 @@ def main():
     reste = max(0, a.caracteres - a.deja_traduits)
     j_trad = math.ceil(reste / a.capacite) if reste else 0
 
+    # la chaîne : traduction, étapes fixes, puis les étapes propres au produit, chacune après la sienne
+    chaine = [("traduction", f"Traduction ({reste} caractères à {a.capacite} par jour)", j_trad)]
+    chaine += [(o, lib, getattr(a, o)) for o, lib in ETAPES]
+    for k, spec in enumerate(a.etape, 1):
+        morceaux = spec.rsplit(":", 2)
+        if len(morceaux) != 3 or not morceaux[0].strip() or not morceaux[1].strip().isdigit():
+            arret(f"--etape « {spec} » : format attendu \"Nom:jours:après\" (ex. \"Relecture de l'auteur:3:relecture\").")
+        nom, jours, apres = morceaux[0].strip(), int(morceaux[1]), morceaux[2].strip().replace("-", "_")
+        cles = [c[0] for c in chaine]
+        if apres not in cles:
+            arret(f"--etape « {spec} » : « {morceaux[2]} » n'est pas une étape de la chaîne. Au choix : "
+                  + ", ".join(c.replace("_", "-") for c in cles if not c.startswith("etape_")) + ".")
+        pos = cles.index(apres) + 1
+        while pos < len(chaine) and chaine[pos][0].startswith(f"etape_{apres}_"):
+            pos += 1   # plusieurs étapes après la même : dans l'ordre donné
+        chaine.insert(pos, (f"etape_{apres}_{k}", f"{nom} (étape ajoutée)", jours))
+
     # à rebours : chaque étape finit le jour ouvré qui précède le début de la suivante
     lignes, fin = [], cal.dernier_ouvre(remise)
     lignes.append(("Remise des fichiers à l'imprimeur", None, fin, None))
-    for option, libelle in reversed([("traduction", f"Traduction ({reste} caractères à {a.capacite} par jour)")] + ETAPES):
-        n = j_trad if option == "traduction" else getattr(a, option)
+    for option, libelle, n in reversed(chaine):
         if n == 0:
             lignes.append((libelle, None, None, 0))
             continue
@@ -360,7 +435,7 @@ def main():
     texte = "\n".join(sortie)
     print(texte)
     if a.sortie:
-        Path(a.sortie).write_text(texte + "\n", encoding="utf-8")
+        ecrire_sortie(a.sortie, texte + "\n")
         print(f"\nRétroplanning écrit dans {a.sortie}")
     return 0
 

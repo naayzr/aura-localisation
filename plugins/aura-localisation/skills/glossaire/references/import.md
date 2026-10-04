@@ -9,8 +9,13 @@ procédure. Trois règles ne bougent pas :
    mot dans NOTES (« Statut d'origine : … »). C'est Hervé qui valide, par lots, après l'import.
 2. **Jamais un second glossaire maître.** Si `Glossaires/Glossaire_<Gamme>.xlsx` existe, l'import est une
    fusion (`--dans`). Le programme refuse une création à côté d'un fichier au nom voisin.
-3. **L'original ne bouge pas.** Il reste dans `IMPORT/` tel quel ; on ne le renomme pas, on ne le
-   supprime pas. S'il faut le ranger ailleurs, c'est avec l'accord d'Hervé, et par copie.
+3. **L'original ne bouge pas** : la règle IMPORT du skill `noyau` (section 7). Un glossaire non standard
+   qu'Hervé a déjà rangé dans `Glossaires/` (le glossaire de démonstration, par exemple) reste lui aussi
+   où il est pendant l'import : il en est la SOURCE, pas un second maître (`importer <ce fichier> --sortie
+   Glossaires/Glossaire_<Gamme>.xlsx`), et on ne le modifie jamais pour le « mettre au standard ». Une fois
+   le nouveau glossaire vérifié ensemble, Hervé range lui-même la source dans `Core/Archives/`, comme
+   l'ancien glossaire de la version 2.0 (étape 3 de la migration, plus bas) : deux fichiers pour une
+   gamme dans `Glossaires/`, ce sont deux vérités.
 
 Exception assumée : un glossaire officiel imposé par un ayant droit (licence) entre lui aussi en
 Brouillon ; sa SOURCE dit « glossaire officiel de licence, <document>, <date> » et Hervé peut le valider
@@ -24,8 +29,8 @@ import pré-validé.
 2. **Le maître existe-t-il ?** AURA regarde `Glossaires/`. Oui → fusion. Non → création.
 3. **Essai** (rien n'est écrit) :
    ```
-   gerer_glossaire.py importer IMPORT/<fichier> --gamme "<Gamme>" --sortie "Glossaires/Glossaire_<Gamme>.xlsx" --provenance "<d'où il vient>"
-   gerer_glossaire.py importer IMPORT/<fichier> --gamme "<Gamme>" --dans "Glossaires/Glossaire_<Gamme>.xlsx" --provenance "…"
+   python3 "${CLAUDE_SKILL_DIR}/scripts/gerer_glossaire.py" importer "<HERVÉ WORLD>/IMPORT/<fichier>" --gamme "<Gamme>" --sortie "<HERVÉ WORLD>/Glossaires/Glossaire_<Gamme>.xlsx" --provenance "<d'où il vient>"
+   python3 "${CLAUDE_SKILL_DIR}/scripts/gerer_glossaire.py" importer "<HERVÉ WORLD>/IMPORT/<fichier>" --gamme "<Gamme>" --dans "<HERVÉ WORLD>/Glossaires/Glossaire_<Gamme>.xlsx" --provenance "…"
    ```
 4. **Ce qu'AURA montre à Hervé**, chiffres du programme tels quels :
    - le nombre de termes **compté** (et l'écart, s'il y en a un, avec un nombre annoncé ailleurs) ;
@@ -40,10 +45,10 @@ import pré-validé.
      anglais.
 5. **Avec son accord** : même commande avec `--ecrire`. Le programme sauvegarde le maître (fusion),
    écrit, relit et recompte.
-6. **Contrôle** : `controle_glossaire.py Glossaires/Glossaire_<Gamme>.xlsx`.
+6. **Contrôle** : `python3 "${CLAUDE_SKILL_DIR}/scripts/controle_glossaire.py" "<HERVÉ WORLD>/Glossaires/Glossaire_<Gamme>.xlsx"`.
 7. **Séance de validation**, par lots, dans cet ordre : catégories proposées → genres (liste groupée,
    jamais devinés) → cellules à double proposition → conflits → statuts. Les décisions s'appliquent avec
-   `gerer_glossaire.py modifier … --lot decisions.csv`.
+   `python3 "${CLAUDE_SKILL_DIR}/scripts/gerer_glossaire.py" modifier "<HERVÉ WORLD>/Glossaires/Glossaire_<Gamme>.xlsx" --lot "<chemin complet du tableau des décisions>"`.
 8. **Journal** : une ligne (« glossaire <Gamme> importé depuis <fichier> : N termes en Brouillon, M à
    valider »). La décision sur chaque terme vit au glossaire, pas au Journal.
 
@@ -83,7 +88,7 @@ Ses glossaires créés avec AURA v2.0 s'appellent `GLOSSAIRE_<GAMME>_vN.xlsx` et
 (`GLOSSAIRE_<GAMME>`, `EN_ATTENTE`, `EXTENSION`, `HÉRITÉ`, `CHANGELOG`, `LISEZMOI`). Ce n'est **pas** un
 import : ses validations ont été faites avec lui, on les **garde**.
 
-1. **Essai** : `python3 scripts/gerer_glossaire.py migrer "<Glossaires/GLOSSAIRE_X_v2.3.xlsx>" --gamme <Gamme>`.
+1. **Essai** : `python3 "${CLAUDE_SKILL_DIR}/scripts/gerer_glossaire.py" migrer "<HERVÉ WORLD>/Glossaires/GLOSSAIRE_X_v2.3.xlsx" --gamme <Gamme>`.
    Le programme lit **tous** les onglets, donne un compte par onglet, nomme ceux qu'il ne lit pas
    (notice), garde les statuts (Confirmé, Gelé…), met les termes de `EN_ATTENTE` en « À confirmer »,
    garde une seule fois un terme présent dans deux onglets, et reprend l'historique `CHANGELOG`.
@@ -119,7 +124,7 @@ Ce que le programme y trouve (essai du 01/10/2026) :
 
 Commande proposée (essai, puis `--ecrire` avec l'accord d'Hervé) :
 ```
-gerer_glossaire.py importer "IMPORT/Glossaire_TaintedGrail_EN-FR.xlsx" --gamme "<nom d'usage de la gamme>" --sortie "Glossaires/Glossaire_<nom d'usage>.xlsx" --provenance "démo AURA du 30/05/2026, à partir des livrets cités dans le fichier, non revérifiée" --par "Hervé"
+python3 "${CLAUDE_SKILL_DIR}/scripts/gerer_glossaire.py" importer "<HERVÉ WORLD>/IMPORT/Glossaire_TaintedGrail_EN-FR.xlsx" --gamme "<nom d'usage de la gamme>" --sortie "<HERVÉ WORLD>/Glossaires/Glossaire_<nom d'usage>.xlsx" --provenance "démo AURA du 30/05/2026, à partir des livrets cités dans le fichier, non revérifiée" --par "Hervé"
 ```
 Si Hervé a déjà importé ou commencé un glossaire de cette gamme pendant la mise en place, c'est
 `--dans` qui s'applique : fusion, conflits montrés, aucun second maître.

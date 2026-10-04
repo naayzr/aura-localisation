@@ -8,11 +8,13 @@ Bibliothèque standard uniquement. La lecture passe par lecture.py (copie identi
 """
 import datetime as dt
 import os
+import posixpath
 import re
 import shutil
 import sys
 import unicodedata
 import zipfile
+import xml.etree.ElementTree as ET
 from pathlib import Path
 from xml.sax.saxutils import escape
 
@@ -100,7 +102,8 @@ def lire_glossaire(chemin):
     """Lit un classeur v3. Les en-têtes sont rapprochés de leur nom exact (le contrôle signale l'écart)."""
     feuilles = {nfc(k): v for k, v in lecture.feuilles_xlsx(chemin).items()}
     g = {"chemin": Path(chemin), "onglets": list(feuilles), "entetes": [], "termes": [],
-         "changelog": [], "changelog_entetes": [], "cellules_hors_entete": 0}
+         "changelog": [], "changelog_entetes": [], "cellules_hors_entete": 0,
+         "changelog_hors_standard": [], "changelog_hors_entete": 0, "commentaires": commentaires_excel(chemin)}
     termes = feuilles.get("Termes")
     if termes:
         g["entetes"] = [nfc(x).strip() for x in termes[0]]
@@ -126,15 +129,118 @@ def lire_glossaire(chemin):
     ch = feuilles.get("CHANGELOG")
     if ch:
         g["changelog_entetes"] = [nfc(x).strip() for x in ch[0]]
+        # ce que le programme ne sait pas réécrire : un en-tête hors liste, une valeur sans en-tête connu
+        g["changelog_hors_standard"] = [e for e in g["changelog_entetes"] if e and e not in CHANGELOG_COLONNES]
         for ligne in ch[1:]:
             if any(str(v).strip() for v in ligne):
                 d = {c: "" for c in CHANGELOG_COLONNES}
-                for j, nom in enumerate(g["changelog_entetes"]):
-                    if nom in d and j < len(ligne):
-                        d[nom] = nfc(ligne[j]).strip()
+                for j, val in enumerate(ligne):
+                    nom = g["changelog_entetes"][j] if j < len(g["changelog_entetes"]) else ""
+                    if nom in d:
+                        d[nom] = nfc(val).strip()
+                    elif str(val).strip() and not nom:
+                        g["changelog_hors_entete"] += 1
                 d["DATE"] = date_texte(d["DATE"])
                 g["changelog"].append(d)
     return g
+
+
+# ------------------------------------------------------------------ ce que la réécriture ne reprend pas
+_NS_REL = "{http://schemas.openxmlformats.org/package/2006/relationships}"
+_NS_S = "{http://schemas.openxmlformats.org/spreadsheetml/2006/main}"
+_NS_FIL = "{http://schemas.microsoft.com/office/spreadsheetml/2018/threadedcomments}"
+_NS_R = "{http://schemas.openxmlformats.org/officeDocument/2006/relationships}"
+
+
+def _cible(base, target):
+    return target.lstrip("/") if target.startswith("/") else posixpath.normpath(posixpath.join(posixpath.dirname(base), target))
+
+
+def commentaires_excel(chemin):
+    """[(onglet, cellule, texte)] des commentaires et notes Excel du classeur. Le programme réécrit le
+    classeur sans eux : ils sont repris dans NOTES (onglet Termes) ou font refuser l'écriture."""
+    out = []
+    try:
+        with zipfile.ZipFile(chemin) as z:
+            noms = set(z.namelist())
+            if not any("comment" in n.lower() for n in noms):
+                return out
+            classeur = ET.fromstring(z.read("xl/workbook.xml"))
+            liens = {l.get("Id"): l.get("Target") for l in ET.fromstring(z.read("xl/_rels/workbook.xml.rels"))}
+            for f in classeur.iter(_NS_S + "sheet"):
+                feuille = _cible("xl/workbook.xml", liens.get(f.get(_NS_R + "id"), ""))
+                rels = posixpath.join(posixpath.dirname(feuille), "_rels", posixpath.basename(feuille) + ".rels")
+                if rels not in noms:
+                    continue
+                cibles = {l.get("Type", "").rsplit("/", 1)[-1]: _cible(feuille, l.get("Target", ""))
+                          for l in ET.fromstring(z.read(rels))}
+                vus = {}
+                # Excel 365 range ses commentaires « à thread » dans threadedComments ET en double (texte de
+                # remplacement) dans comments ; ses notes ne sont QUE dans comments. On lit donc les deux : le
+                # texte à thread pour une cellule qui en a un, la note pour toutes les autres — jamais l'un
+                # à la place de l'autre (une feuille qui porte les deux perdait ses notes en silence).
+                if cibles.get("threadedComment") in noms:
+                    for c in ET.fromstring(z.read(cibles["threadedComment"])).iter(_NS_FIL + "threadedComment"):
+                        texte = "".join(c.find(_NS_FIL + "text").itertext()).strip() if c.find(_NS_FIL + "text") is not None else ""
+                        vus[c.get("ref")] = " / ".join(x for x in (vus.get(c.get("ref")), texte) if x)
+                a_thread = set(vus)
+                if cibles.get("comments") in noms:
+                    for c in ET.fromstring(z.read(cibles["comments"])).iter(_NS_S + "comment"):
+                        if c.get("ref") not in a_thread:
+                            vus[c.get("ref")] = "".join(c.itertext()).strip()
+                out += [(nfc(f.get("name")), ref, nfc(txt)) for ref, txt in vus.items()]
+    except (KeyError, zipfile.BadZipFile, ET.ParseError):
+        return out
+    return out
+
+
+def ref_cellule(ref):
+    """« C12 » → (index de colonne 2, ligne 12) ; (None, None) si illisible."""
+    m = re.fullmatch(r"\$?([A-Z]+)\$?(\d+)", ref or "")
+    if not m:
+        return None, None
+    n = 0
+    for c in m.group(1):
+        n = n * 26 + ord(c) - 64
+    return n - 1, int(m.group(2))
+
+
+def commentaires_hors_termes(g):
+    """Commentaires Excel qui ne sont pas posés sur une ligne de terme de l'onglet Termes : le programme
+    ne peut les reprendre nulle part (ceux d'une ligne de terme vont dans ses NOTES)."""
+    lignes = {t["_ligne"] for t in g["termes"]}
+    return [(o, ref, x) for o, ref, x in g["commentaires"] if o != "Termes" or ref_cellule(ref)[1] not in lignes]
+
+
+def _retoucher(chemin, changer=None, ajouter=None):
+    """Pour les auto-tests seulement : modifie des parties du classeur (nom → fonction(texte) → texte) et
+    en ajoute (nom → texte), comme le ferait une retouche à la main dans Excel."""
+    parts = {}
+    with zipfile.ZipFile(chemin) as z:
+        for n in z.namelist():
+            parts[n] = z.read(n)
+    for n, f in (changer or {}).items():
+        parts[n] = f(parts[n].decode("utf-8")).encode("utf-8")
+    for n, x in (ajouter or {}).items():
+        parts[n] = x.encode("utf-8")
+    with zipfile.ZipFile(chemin, "w", zipfile.ZIP_DEFLATED) as z:
+        for n, octets in parts.items():
+            z.writestr(n, octets)
+
+
+def textes_onglets(chemin, onglets=("Tableau de bord", "Notice")):
+    """{onglet: [textes]} des cellules de texte (chiffres exclus) de ces onglets, dans l'ordre."""
+    feuilles = {nfc(k): v for k, v in lecture.feuilles_xlsx(chemin).items()}
+    out = {}
+    for o in onglets:
+        vus = []
+        for ligne in feuilles.get(o, []):
+            for v in ligne:
+                s = nfc(v).strip()
+                if s and s not in ("—", "-") and not re.fullmatch(r"-?\d+(?:[.,]\d+)?", s) and s not in vus:
+                    vus.append(s)
+        out[o] = vus
+    return out
 
 
 def nombre_termes(termes):
@@ -174,6 +280,7 @@ def sauvegarder(chemin, archives=None, quand=None):
     if archives is None:
         raise ValueError("dossier d'archives inconnu : le glossaire n'est pas dans Glossaires/ ; "
                          "préciser --archives <HERVÉ WORLD>/Core/Archives")
+    lecture.hors_du_plugin(archives)
     archives.mkdir(parents=True, exist_ok=True)
     quand = quand or dt.datetime.now()
     n = nombre_termes(lire_glossaire(src)["termes"]) if src.suffix.lower() == ".xlsx" else 0
@@ -570,7 +677,7 @@ def _classeur(chemin, onglets, noms_definis=""):
                        for i in range(1, n + 1))
              + '<Override PartName="/xl/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml"/>'
              "</Types>")
-    chemin = Path(chemin)
+    chemin = Path(lecture.hors_du_plugin(chemin))
     tmp = chemin.parent / f".ecriture_{chemin.name}"
     chemin.parent.mkdir(parents=True, exist_ok=True)
     with zipfile.ZipFile(tmp, "w", zipfile.ZIP_DEFLATED) as z:

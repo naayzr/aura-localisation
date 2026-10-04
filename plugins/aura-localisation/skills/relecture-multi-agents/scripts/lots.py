@@ -157,6 +157,14 @@ def auto_test():
         code, texte = _lancer([str(f), "--relecteurs", "4"])                          # 3 angles par défaut
         if code != 2 or "Il faut 4 angles" not in texte:
             manquent.append("4 relecteurs pour 3 angles : refus attendu (code 2)")
+        dans_plugin = Path(__file__).resolve().parent / "plan_essai"           # le dossier du plugin
+        code, texte = _lancer([str(f), "--plan", str(dans_plugin)])
+        if code != 2 or "REFUS" not in texte or dans_plugin.exists():
+            manquent.append(f"--plan dans le dossier du plugin : refus attendu (code 2), vu le code {code}")
+        for args, quoi in ((["--taille", "0"], "--taille 0"), (["--relecteurs", "-1"], "--relecteurs -1")):
+            code, texte = _lancer([str(f)] + args)                                     # valeurs absurdes
+            if code != 2 or "Valeur refusée" not in texte:
+                manquent.append(f"{quoi} : refus attendu (code 2), vu le code {code}")
         print(f"  annonce des relecteurs parallèles : {'OK' if not manquent else 'ÉCHEC'}")
         if manquent:
             echecs.append(" ; ".join(manquent))
@@ -181,6 +189,9 @@ def main():
     ap.add_argument("--plan")
     ap.add_argument("--controles", default="typographie,longueur,glossaire,comptage,renvois")
     a = ap.parse_args()
+    if a.taille < 1 or a.relecteurs < 0:
+        print(f"Valeur refusée : --taille doit être au moins 1 (reçu {a.taille}), --relecteurs au moins 0 (reçu {a.relecteurs}).")
+        sys.exit(2)
 
     try:
         segments = lecture.textes(a.fichier)
@@ -236,7 +247,7 @@ def main():
         attendus += [f"lot-{i:02d}" for i in range(1, len(lots) + 1)]
 
     if a.plan:
-        dossier = Path(a.plan)
+        dossier = Path(lecture.hors_du_plugin(a.plan))
         plan = dossier / "PLAN.txt"
         if plan.exists():
             print(f"PLAN REFUSÉ : {plan} existe déjà. Un plan ne se réécrit pas après coup ;")

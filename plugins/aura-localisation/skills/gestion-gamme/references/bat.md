@@ -58,8 +58,8 @@ Pour chaque page ou planche de cartes :
 
 Type : tronqué, manquant, non à jour, balise, icône, valeur, césure, typographie, renvoi, index,
 autre. La liste est numérotée pour que le maquettiste réponde point par point. Elle est rédigée en
-phrases claires, sans code interne, sans mention d'AURA ; l'e-mail qui l'accompagne passe par le skill
-`brief-editeur`.
+phrases claires, sans code interne ; la mention de l'outil suit la règle du skill `brief-editeur`, par
+qui passe aussi l'e-mail qui l'accompagne. <!-- [R-33] -->
 
 ## Le suivi BAT1 → BAT2
 

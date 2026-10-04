@@ -111,7 +111,7 @@ autre et la mesure est fausse. Seule l'épreuve avec le vrai gabarit prouve qu'u
 
 
 def ecrire_sans_ecraser(chemin, contenu, encodage="utf-8"):
-    p = Path(chemin)
+    p = Path(lecture.hors_du_plugin(chemin))
     if p.exists():
         raise SystemExit(f"{p.name} existe déjà : je n'écrase pas. Choisis un autre nom (--sortie).")
     p.write_bytes(contenu.encode(encodage) if isinstance(contenu, str) else contenu)

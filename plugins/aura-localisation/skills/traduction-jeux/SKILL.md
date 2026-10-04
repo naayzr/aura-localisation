@@ -139,7 +139,7 @@ La phrase ne dit rien de **s'arrêter** sur cette case. AURA cherche la réponse
 
 ## 6. Garder la même voix sur toute une gamme
 
-**La fiche de style** capture une voix, là où le glossaire liste des termes. Pour une gamme suivie sur plusieurs années, la différence est décisive. Elle contient : le registre de narration (adresse directe ou troisième personne), le niveau de langue et la densité des phrases, 5 phrases caractéristiques avec leur traduction validée, les formules figées (ouvertures de règles spéciales, accroches), la politique sur les noms propres de la gamme. Modèle : `references/fiche-de-style.md`. Elle vit dans la mémoire d'Hervé (`Références/` ou le registre de la gamme `Core/Gammes/<Gamme>.md`), jamais dans l'extension.
+**La fiche de style** capture une voix, là où le glossaire liste des termes. Pour une gamme suivie sur plusieurs années, la différence est décisive. Elle contient : l'adresse au joueur dans les règles et sur les cartes, le niveau de langue et la densité des phrases, 5 phrases caractéristiques avec leur traduction validée, les formules figées (ouvertures de règles spéciales, accroches). Elle ne contient ni la voix narrative de l'univers (la carte de voix du skill `narration-jeux`), ni la politique sur les noms propres (la fiche de l'éditeur, voir partie 3), ni les termes (le glossaire). Modèle : `references/fiche-de-style.md`. Elle vit à un seul endroit de la mémoire d'Hervé : `Références/Style_<Gamme>.md`, jamais dans l'extension. <!-- [R-41] -->
 
 **Reprendre une gamme après une longue pause — trois pièges.** [EXEMPLE FICTIF]
 1. *Réintroduire une variante* : « fléau » était établi, on écrit « malédiction » faute d'avoir relu la fiche. Le skill `glossaire` le rattrape si le terme y est.

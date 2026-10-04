@@ -21,11 +21,18 @@ Exemples :
 identifiant) où des changements connus ont été glissés exprès ; il doit tous les trouver, et ne
 rien signaler pour un simple écart d'espaces.
 
+Une colonne donnée par --cle ou --colonnes doit exister (nom d'en-tête, ou lettre / numéro d'une
+colonne remplie) ; sinon le programme s'arrête au lieu de comparer une colonne vide. Si aucune ligne
+ne porte d'identifiant dans la colonne --cle, il s'arrête aussi (code 2) : « 0 modification » n'aurait
+rien prouvé. --sortie ne remplace jamais un fichier existant.
+
 Codes de sortie : 0 comparaison faite (avec ou sans différence) ; 1 contrôle à vide ou auto-test en
 échec ; 2 erreur d'usage ou fichier illisible.
 """
 import argparse
+import contextlib
 import difflib
+import io
 import re
 import sys
 from collections import Counter
@@ -34,8 +41,8 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import lecture  # noqa: E402
-from commun import (normaliser, raccourcir, diff_mots, ressemblance, empreinte, colonne,  # noqa: E402
-                    lire_table, charger_memoire, decrire_traductions)
+from commun import (arret, normaliser, raccourcir, diff_mots, ressemblance, empreinte, colonne,  # noqa: E402
+                    lire_table, charger_memoire, decrire_traductions, sortie_libre, ecrire_sortie)
 
 AFFICHAGE_MAX = 30000  # au-delà, l'affichage est tronqué ; les comptes restent faits sur tout le fichier
 
@@ -162,12 +169,12 @@ def indexer(tete, corps, i_cle, nom):
 
 
 def comparer_tables(ta, ca, tb, cb, spec_cle, spec_cols, strict):
-    i_cle_a, i_cle_b = colonne(ta, spec_cle), colonne(tb, spec_cle)
+    i_cle_a, i_cle_b = colonne(ta, spec_cle, ca), colonne(tb, spec_cle, cb)
     if spec_cols:
         noms = [c.strip() for c in spec_cols.split(",") if c.strip()]
     else:
         noms = [e for k, e in enumerate(ta) if e and k != i_cle_a and e.lower() in [x.lower() for x in tb]]
-    cols = [(nom, colonne(ta, nom), colonne(tb, nom)) for nom in noms]
+    cols = [(nom, colonne(ta, nom, ca), colonne(tb, nom, cb)) for nom in noms]
     ia, dbl_a, sans_a = indexer(ta, ca, i_cle_a, "ancien")
     ib, dbl_b, sans_b = indexer(tb, cb, i_cle_b, "nouveau")
 
@@ -232,7 +239,7 @@ def controle_a_vide(args):
         if not res0["colonnes"]:
             print("CONTRÔLE À VIDE : ÉCHEC — aucune colonne comparée (vérifie --colonnes).")
             return 1
-        i_col, i_cle = colonne(ta, res0["colonnes"][0]), colonne(ta, args.cle)
+        i_col, i_cle = colonne(ta, res0["colonnes"][0], ca), colonne(ta, args.cle, ca)
         sabote = [(k, list(l)) for k, l in ca]
         portant_id = [l for _, l in sabote if i_cle < len(l) and l[i_cle].strip()]
         if not portant_id:
@@ -264,6 +271,21 @@ def controle_a_vide(args):
 
 
 # ------------------------------------------------------------------ auto-test
+def _lancer(argv):
+    """Lance le vrai programme (main) avec ces options ; renvoie (code de sortie, texte affiché)."""
+    ancien, sortie = sys.argv, io.StringIO()
+    sys.argv = ["comparer_versions.py"] + argv
+    try:
+        with contextlib.redirect_stdout(sortie), contextlib.redirect_stderr(sortie):
+            try:
+                code = main()
+            except SystemExit as e:
+                code = e.code
+    finally:
+        sys.argv = ancien
+    return code, sortie.getvalue()
+
+
 def auto_test():
     """Deux versions fabriquées ici, avec des changements connus glissés exprès.
 
@@ -327,6 +349,35 @@ def auto_test():
         "sans identifiant": (1, 1),
     }
     echecs += [f"cartes {k} : attendu {attendus_t[k]}, vu {vus_t[k]}" for k in attendus_t if vus_t[k] != attendus_t[k]]
+    # -- refus : un en-tête mal tapé ne devient jamais une colonne Excel vide (« TX », « ID ») ; une
+    #    colonne-clé sans aucun identifiant arrête tout ; --sortie ne remplace jamais un fichier.
+    with tempfile.TemporaryDirectory() as d:
+        v1, v2, v3 = Path(d) / "cartes_v1.csv", Path(d) / "cartes_v2.csv", Path(d) / "sans_id.csv"
+        v1.write_text("Réf.;Title;Text\nC001;Guard;Block 2 damage.\nC002;Thief;Steal 1 gold.\n", encoding="utf-8")
+        v2.write_text("Réf.;Title;Text\nC001;Guard;Block 3 damage.\nC002;Thief;Steal 1 gold.\n", encoding="utf-8")
+        v3.write_text("Réf.;Title;Text\n;Guard;Block 2 damage.\n;Thief;Steal 1 gold.\n", encoding="utf-8")
+        notes = Path(d) / "notes.md"
+        notes.write_text("NOTES D'HERVÉ\n", encoding="utf-8")
+        cas_refus = [
+            ("colonne « TX » absente des en-têtes", [str(v1), str(v2), "--cle", "Réf.", "--colonnes", "Title,TX"],
+             "introuvable"),
+            ("clé « ID » absente (en-tête réel « Réf. »)", [str(v1), str(v2), "--cle", "ID"], "introuvable"),
+            ("colonne-clé sans aucun identifiant", [str(v3), str(v3), "--cle", "Réf."],
+             "Aucune ligne ne porte d'identifiant"),
+            ("--sortie sur un fichier existant", [str(v1), str(v2), "--cle", "Réf.", "--sortie", str(notes)],
+             "existe déjà"),
+        ]
+        for nom, argv, morceau in cas_refus:
+            code, texte = _lancer(argv)
+            ok = code == 2 and morceau in texte
+            print(f"  refus — {nom} : {'OK' if ok else 'ÉCHEC'}")
+            if not ok:
+                echecs.append(f"refus attendu (code 2, « {morceau} ») pour : {nom} ; vu code {code}")
+        if notes.read_text(encoding="utf-8") != "NOTES D'HERVÉ\n":
+            echecs.append("--sortie a remplacé un fichier existant")
+        code, texte = _lancer([str(v1), str(v2), "--cle", "Réf.", "--colonnes", "Title,Text"])
+        if code != 0 or "modifiées : 1" not in texte:
+            echecs.append(f"bon appel (--cle Réf.) : 1 carte modifiée attendue, vu code {code}")
     for k in attendus:
         print(f"  passages {k} : {len(vus[k])} vu(s), {len(attendus[k])} attendu(s)")
     for k in ("modifiées", "ajoutées", "supprimées"):
@@ -336,7 +387,7 @@ def auto_test():
         return 1
     print("AUTO-TEST OK — 7 changements glissés exprès (passages : modifié, ajouté, supprimé, déplacé ; "
           "cartes : modifiée, ajoutée, supprimée), tous trouvés ; 0 fausse alerte sur les écarts d'espaces "
-          "et la ligne de section")
+          "et la ligne de section ; 4 refus (colonne et clé absentes, clé sans identifiant, fichier existant)")
     return 0
 
 
@@ -359,6 +410,7 @@ def main():
                     help="essai sur deux versions fabriquées dans le programme (aucun fichier à donner)")
     args = ap.parse_args()
 
+    sortie_libre(args.sortie)
     try:
         if args.controle_a_vide:
             return controle_a_vide(args)
@@ -373,6 +425,11 @@ def main():
             ta, ca = lire_table(args.ancien, args.feuille, [args.cle])
             tb, cb = lire_table(args.nouveau, args.feuille, [args.cle])
             res = comparer_tables(ta, ca, tb, cb, args.cle, args.colonnes, args.strict)
+            vides = [nom for nom, corps, n in ((args.ancien, ca, res["n_a"]), (args.nouveau, cb, res["n_b"])) if corps and not n]
+            if vides:
+                arret(f"Aucune ligne ne porte d'identifiant dans la colonne « {args.cle} » de "
+                      f"{', '.join(Path(v).name for v in vides)} : rien n'a été comparé. Vérifie --cle "
+                      f"(en-têtes lus : {', '.join(e for e in ta if e)}).")
             sections = rapport_tables(res, memo)
             a_retraduire = sum(len(b) for _, _, _, e in res["modifiees"] for _, b in e.values()) + \
                 sum(len(v) for _, _, vals in res["ajoutees"] for v in vals.values())
@@ -418,7 +475,7 @@ def main():
     print(f"Résumé : {resume}")
     print(f"À retraduire : {a_retraduire} caractères (espaces comprises).")
     if args.sortie:
-        Path(args.sortie).write_text(rapport, encoding="utf-8")
+        ecrire_sortie(args.sortie, rapport)
         print(f"Rapport complet écrit dans {args.sortie}")
     elif len(rapport) > AFFICHAGE_MAX:
         print(rapport[:AFFICHAGE_MAX])

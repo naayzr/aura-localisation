@@ -89,9 +89,9 @@ FIN DU RAPPORT
 
 ## Après chaque lot : `Core/_EN_COURS.md`
 
-Mettre à jour les lignes, sans réécrire le fichier :
+Mettre à jour les lignes de la section de ce projet (une section par projet, règle du skill `noyau`), sans réécrire le fichier ni toucher aux autres sections : <!-- [R-31] -->
 ```
-- Lot traité : relecture, lot 3 sur 5 (§ 176 → § 241) — rapport écrit
+- Relecture — lot traité : lot 3 sur 5 (§ 176 → § 241) — rapport écrit
 - Prochaine étape : relecture du lot 4 (dossier Livrables/<Projet>/relecture)
 ```
 Si la conversation devient lourde ou si le quota approche de sa limite, AURA sauvegarde (skill `noyau`) et dit à Hervé où elle reprendra. La reprise relit `Core/_EN_COURS.md` et `PLAN.txt`, puis commence au lot suivant — jamais au début.

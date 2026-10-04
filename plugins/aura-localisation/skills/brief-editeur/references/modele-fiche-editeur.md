@@ -72,6 +72,17 @@ Validée par Hervé le AAAA-MM-JJ.
 - Format des retours sur épreuve (BAT) : <tableau / annotations PDF / liste numérotée>
 - Interlocuteur pour les mentions légales et les crédits : <…>
 
+## Noms propres et noms anglais
+
+<!-- [R-41] -->
+La politique de l'éditeur, écrite ici seulement (la fiche de style d'une gamme y renvoie) : garder
+l'anglais, adapter ou traduire, et pour quelles catégories (personnages, lieux, mécaniques, noms de
+genres de jeu), avec sa source. Une exception propre à une gamme (licence dont l'ayant droit impose ses
+noms) s'écrit ici, avec le nom de la gamme. Les cas tranchés, nom par nom, vont au glossaire.
+
+| Catégorie | Politique | Gamme concernée (ou « toutes ») | Source |
+|---|---|---|---|
+
 ## Écarts à la charte typographique
 
 Seulement ce qui diffère de la charte du skill `typographie-fr`, avec la source de chaque écart
@@ -87,6 +98,7 @@ Seulement ce qui diffère de la charte du skill `typographie-fr`, avec la source
 - Source : <contrat du AAAA-MM-JJ, article … / e-mail du … / « dit par Hervé le … »>
 - Accord de confidentialité : <Oui / Non / Inconnu> ; portée : <produits, durée> ; exclut-il les
   outils en ligne : <Oui / Non / Inconnu>
+- Obligation de déclarer l'usage d'outils d'IA : <Oui : mention prévue « … » (article …) / Non / Inconnu>
 - Ce qu'AURA fait en conséquence : <ex. « demander avant d'ouvrir un fichier source de cet éditeur »>
 
 ## Conditions convenues (repères, le contrat fait foi)
@@ -131,5 +143,6 @@ Validée par Hervé le 2026-10-02.
 - Source : contrat du 2026-09-15, article 7 (lu par Hervé)
 - Accord de confidentialité : Oui ; portée : extension « Le Guet » jusqu'à sa sortie ; exclut les outils
   en ligne : Oui
+- Obligation de déclarer l'usage d'outils d'IA : Sans objet (IA non autorisée)
 - Ce qu'AURA fait en conséquence : demander avant d'ouvrir tout fichier source de cet éditeur.
 ```

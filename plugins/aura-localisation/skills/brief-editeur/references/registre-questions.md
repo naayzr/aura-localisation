@@ -6,7 +6,13 @@ naissance à sa réponse. Il appartient à la **couche mémoire** d'Hervé : AUR
 modèle s'il n'existe pas, y ajoute des lignes et met à jour leur statut ; elle n'efface jamais une
 ligne et ne réécrit jamais le fichier en entier.
 
-## Le modèle (à copier tel quel à la création)
+<!-- [R-28] -->
+**Ce fichier est la seule définition de la structure du registre.** La graine que pose la mise à jour
+(`Core/Questions_Editeurs.md`) est la copie exacte du bloc « Le fichier à sa création » ; les autres
+skills (`qa-coherence`, `gestion-gamme`, `traduction-jeux`…) renvoient au skill `brief-editeur` sans
+recopier les colonnes.
+
+## Le fichier à sa création (copie exacte de la graine)
 
 ```markdown
 # Questions aux éditeurs
@@ -14,14 +20,34 @@ ligne et ne réécrit jamais le fichier en entier.
 > Registre des questions posées aux éditeurs et de leurs réponses — mémoire d'Hervé.
 > Une ligne n'est jamais effacée : une question devenue sans objet passe « Retirée ».
 > Numéros uniques dans tout le fichier, jamais réutilisés.
+> Une section par éditeur, ajoutée par AURA à la première question qui le concerne.
+```
 
+## La section d'un éditeur (ajoutée à sa première question)
+
+```markdown
 ## <Nom de l'éditeur tel qu'il l'écrit>
 
 | N° | Produit | Référence (carte, page, règle) | Question | Proposition d'Hervé | Statut | Réponse | Date | Impact glossaire | Posée par |
 |---|---|---|---|---|---|---|---|---|---|
 ```
 
-Une section par éditeur (même nom que sa fiche `Core/Editeurs/<Éditeur>.md`).
+Le titre de section porte le même nom que la fiche `Core/Editeurs/<Éditeur>.md`. Avant d'ajouter une
+section, AURA vérifie qu'il n'en existe pas déjà une pour cet éditeur sous une autre graphie.
+
+## Un registre d'une autre forme
+
+Le fichier a pu être créé sous une autre forme : un seul tableau avec une colonne « Éditeur » et une
+colonne « Date réponse », sans « Posée par » (la graine de la première publication de la version 3.0),
+ou un tableau fait par Hervé. AURA ne le réécrit pas en entier et ne mélange jamais deux formes dans un
+même tableau :
+
+- **tableau encore vide** (aucune ligne de question) : AURA propose à Hervé de le remplacer par le
+  bloc « Le fichier à sa création » ; elle ne le fait qu'avec son accord, et rien d'autre n'est touché ;
+- **tableau qui contient des questions** : il reste tel quel, à sa place. Ses lignes gardent leurs
+  numéros et se mettent à jour dans leurs propres colonnes (statut, réponse). Les questions nouvelles
+  vont dans les sections par éditeur, ajoutées en dessous ; leur numéro suit le plus grand numéro de
+  tout le fichier, ancien tableau compris.
 
 ## Les colonnes
 
@@ -56,8 +82,9 @@ Gelé, Archivé) sont ceux du glossaire et ne se mélangent pas avec eux.
    « Envoyée » que lorsqu'Hervé confirme l'avoir envoyée**, avec la date et le numéro du lot.
 <!-- [I-04] -->
 4. **Fil en attente** : à l'envoi, une ligne dans `Core/Suivi.md` (« questions n° 12 à 18 envoyées à
-   <Éditeur> le 2026-10-05, réponse demandée avant le 2026-10-12 »). Elle est retirée à la réponse,
-   jamais recopiée telle quelle d'une séance à l'autre.
+   <Éditeur> le 2026-10-05, réponse demandée avant le 2026-10-12 »). Elle est close à la réponse selon
+   la règle des fils du skill `noyau` (jamais effacée), jamais recopiée telle quelle d'une séance à
+   l'autre. <!-- [R-27] -->
 5. **Réponse** : chaque réponse est reportée sur sa ligne (statut « Répondue »), puis appliquée :
    glossaire (skill `glossaire`), texte en cours, traducteur concerné. Quand tout est reporté, la ligne
    passe « Close ».

@@ -51,7 +51,7 @@ Les **Paramètres** s'ouvrent avec la roue dentée, en bas à gauche de la fenê
 Si l'écran n'est pas en français : **« Général »**, réglage **« Langue »**, choisis **Français**, puis relance Obsidian.
 
 ## Demander à AURA de préparer ton dossier
-Dans une tâche Cowork avec ton dossier HERVÉ WORLD, tape :
+Dans une conversation Cowork avec ton dossier HERVÉ WORLD, tape :
 
 > Prépare mon dossier pour Obsidian.
 

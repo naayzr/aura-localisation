@@ -8,17 +8,18 @@ description: "Contrôle, carte par carte ou ligne par ligne, de la longueur du t
 Le français est souvent plus long que l'anglais, mais la vraie contrainte est **le cadre de texte de chaque carte**. Et une balise perdue ou un chiffre changé donne une carte fausse à l'impression. Ce contrôle se fait par programme, sur tout le fichier, sans coût notable sur le quota.
 
 ## Contrôler
-Applique d'abord la règle « Les programmes et le dossier d'Hervé » du skill `noyau` (le programme voit-il le fichier ? sinon, le glisser ; les rapports s'écrivent dans HERVÉ WORLD). Puis, depuis le dossier de ce skill :
-- **Tableur de cartes** : `python3 scripts/longueurs.py "<fichier>" --en EN --fr FR --id Carte` (les en-têtes exacts des colonnes).
+Applique d'abord la règle « Les programmes et le dossier d'Hervé » du skill `noyau` (le programme voit-il le fichier ? sinon, le glisser ; les rapports s'écrivent dans HERVÉ WORLD). Puis, avec le programme et les fichiers en chemins complets (règle « Écrire une commande » du skill `noyau`) : <!-- [R-29] -->
+- **Tableur de cartes** : `python3 "${CLAUDE_SKILL_DIR}/scripts/longueurs.py" "<fichier>" --en EN --fr FR --id Carte` (les en-têtes exacts des colonnes).
   - Seuil d'expansion : `--seuil 1.25` par défaut (+25 % et au moins 10 caractères de plus). L'éditeur ou le maquettiste peut donner un autre seuil : il est noté dans sa fiche `Core/Editeurs/<Éditeur>.md` ou dans le registre de gamme.
-  - Maximum connu : `--max 180` (tous les champs), ou `--max-col Max` si le tableur a une colonne de longueur maximale par ligne.
-- **Deux Word** (source et traduction) : `python3 scripts/longueurs.py "<source.docx>" "<cible.docx>"`. Seulement s'ils ont le même nombre de paragraphes ; sinon le programme le dit et s'arrête plutôt que de mal aligner.
-- **Avant de croire « 0 alerte »** : `python3 scripts/longueurs.py --auto-test` doit trouver les 4 fautes glissées exprès.
+  - Maximum connu : `--max 180` (tous les champs), ou `--max-col Max` si le tableur a une colonne de longueur maximale par ligne. Une case de cette colonne qui n'est pas un nombre (« N/A ») est listée en fin de rapport : la ligne est contrôlée sans son maximum, tu la montres à Hervé.
+  - Un nom de colonne demandé (`--en`, `--fr`, `--id`, `--max-col`) absent des en-têtes arrête le programme, qui liste les en-têtes lus : tu reprends avec le nom exact, rien n'a été contrôlé entre-temps. <!-- [R-58] [R-49] -->
+- **Deux Word** (source et traduction) : `python3 "${CLAUDE_SKILL_DIR}/scripts/longueurs.py" "<source.docx>" "<cible.docx>"`. Seulement s'ils ont le même nombre de paragraphes ; sinon le programme le dit et s'arrête plutôt que de mal aligner.
+- **Avant de croire « 0 alerte »** : `python3 "${CLAUDE_SKILL_DIR}/scripts/longueurs.py" --auto-test` doit répondre « AUTO-TEST OK » (toutes les fautes glissées exprès trouvées, aucune fausse alerte sur les cartes propres).
 
 ## Lire le rapport
 - **[L] longueur / débord** : à raccourcir, ou à signaler au maquettiste.
-- **[B] balises ou icônes** : manquantes ou en trop. Toujours une erreur à corriger avant livraison, sauf accord écrit de l'éditeur.
-- **[N] nombres** : différents entre l'anglais et le français. Souvent une vraie erreur (« one card » traduit par « deux cartes »). Parfois voulu (un chiffre écrit en toutes lettres) : tu le présentes comme « à vérifier », tu ne tranches pas.
+- **[B] balises ou icônes** : manquantes ou en trop. Toujours une erreur à corriger avant livraison, sauf accord écrit de l'éditeur. Une balise est reconnue comme dans le skill `comptage-caracteres` (un identifiant sans espace).
+- **[N] nombres** : différents entre l'anglais et le français (le séparateur de milliers ne compte pas : « 1,000 » et « 1 000 » sont le même nombre). Souvent une vraie erreur (« one card » traduit par « deux cartes »). Parfois voulu (un chiffre écrit en toutes lettres) : tu le présentes comme « à vérifier », tu ne tranches pas.
 - **[V] traduction vide** : ligne oubliée.
 Tu présentes : le verdict chiffré, puis le tableau « carte → alerte → proposition ».
 

@@ -1,6 +1,8 @@
 # AURA SAVE — la sauvegarde en détail
 
-La sauvegarde se déclenche de trois façons : Hervé tape `AURA SAVE` ; tu la lances toi-même (toutes les 10 à 15 réponses d'une longue séance, ou quand la conversation approche de sa limite — annoncé en une ligne) ; ou au démarrage, pour rattraper une session fermée sans SAVE (note de `Core/Sessions/` plus récente que le Journal).
+Il y a deux sauvegardes. <!-- [R-13] -->
+- **La sauvegarde légère**, automatique pendant une longue séance : ses deux écritures sont dans le SKILL.md de ce skill (section 3) ; elle ne touche à rien d'autre.
+- **La sauvegarde complète**, décrite ici : quand Hervé tape `AURA SAVE`, en fin de séance (tu la proposes), ou au démarrage, pour rattraper une session fermée sans SAVE (note de `Core/Sessions/` plus récente que le Journal).
 
 ## 1. Le scan — actif, catégorie par catégorie
 Tu relis la conversation (et la note de session du jour) pour chacune des cinq catégories. Ce n'est pas un souvenir : c'est une relecture.
@@ -21,9 +23,10 @@ Tu relis la conversation (et la note de session du jour) pour chacune des cinq c
 3. `Core/Profile.md`, fiches `Core/Editeurs/`, registres `Core/Gammes/`.
 4. `Core/Questions_Editeurs.md`, `Core/Suivi.md` (fils ouverts avec leur date de dernière activité, fils clos avec leur date).
 5. `Core/Tasks.md`.
-6. `Core/_EN_COURS.md` (état présent du travail et portes de livraison).
-7. `Core/CONTEXT.md` — réécrit en **état présent** seulement, et **plafonné à ~1 500 tokens (≈ 6 000 caractères)** : qui, projet actif, pipeline en tableau court, prochaine action. Ce qui dépasse va au Journal. <!-- [I-05] -->
-8. `Core/Journal.md` — **on ajoute en bas, on n'efface jamais** : `## Session AAAA-MM-JJ — [sujet]`, ce qui a été fait, décidé, appris, ce qui reste. Une ligne de sommaire en tête du Journal (date + sujet).
+6. `Core/_EN_COURS.md` : seulement la section du projet de la séance (état présent du travail et portes de livraison) ; les sections des autres projets ne bougent pas. <!-- [R-31] -->
+7. `Core/Journal.md` — **avant CONTEXT**, et **on ajoute en bas, on n'efface jamais** : `## Session AAAA-MM-JJ — [sujet]`, ce qui a été fait, décidé, appris, ce qui reste. Une ligne de sommaire en tête du Journal (date + sujet). Relis l'entrée une fois écrite. <!-- [R-26] -->
+8. `Core/CONTEXT.md` — **l'état présent**, **plafonné à ~1 500 tokens (≈ 6 000 caractères)** : qui, projet actif, pipeline en tableau court, prochaine action. <!-- [I-05] --> Tu le **mets à jour section par section**, tu ne le réécris pas en bloc. Avant de retirer une ligne, tu vérifies qu'elle est déjà écrite là où elle vit désormais : le passé au Journal (point 7), un fil en attente dans `Core/Suivi.md`, une question à un éditeur dans `Core/Questions_Editeurs.md`, une personne de l'équipe dans le registre de sa gamme. Une ligne qui n'est écrite nulle part ailleurs reste dans CONTEXT. Ainsi, une coupure entre deux écritures (quota épuisé, application fermée) ne perd rien. <!-- [R-26] -->
+   **Première sauvegarde après la mise à jour** : un CONTEXT de la version 2.0 a des sections que la version 3.0 range ailleurs (« QUESTIONS EN ATTENTE ÉDITEURS », « RELECTEURS ACTIFS »). Si elles ne contiennent que des tirets, tu les laisses. Si elles ont de vraies lignes, tu proposes à Hervé de les transférer (les questions vers `Core/Questions_Editeurs.md`, chaque relecteur vers la section « Équipe » du registre de sa gamme, et ce qu'on attend de lui vers `Core/Suivi.md`) ; tu écris d'abord chaque ligne à sa nouvelle place, tu la relis, et seulement ensuite, avec son accord, tu remplaces la section de CONTEXT par une ligne de renvoi. « GLOSSAIRES ACTIFS » peut rester dans CONTEXT.
 9. La note `Core/Sessions/AAAA-MM-JJ.md` : ajoute en bas « promue dans le Journal à HHhMM ».
 10. Tu confirmes : « Sauvegardé. Reprends avec AURA START quand tu veux. » — et tu dis en une ligne s'il reste un point non sauvegardé (fichier verrouillé, par exemple).
 

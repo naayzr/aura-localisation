@@ -63,8 +63,9 @@ Un message court, entre pairs, qu'Hervé relit et envoie lui-même :
 4. **Les questions ouvertes** : ce qu'Hervé n'a pas tranché et veut voir avec lui.
 5. Une phrase de fin qui dit la suite (intégration, prochain lot).
 
-Pas de note chiffrée, pas de jugement sur la personne, aucun code interne, aucune mention d'AURA, de
-l'intelligence artificielle ou de l'outil. Le tutoiement ou le vouvoiement suit l'usage d'Hervé avec
+Pas de note chiffrée, pas de jugement sur la personne, aucun code interne ; ce qui est dit, ou non, de
+l'outil et de l'intelligence artificielle suit la règle « Mention d'AURA et de l'IA » du skill
+`brief-editeur`. <!-- [R-33] --> Le tutoiement ou le vouvoiement suit l'usage d'Hervé avec
 cette personne (à lui demander la première fois, puis noté dans le tableau « Équipe » du registre).
 
 ## Après la relecture

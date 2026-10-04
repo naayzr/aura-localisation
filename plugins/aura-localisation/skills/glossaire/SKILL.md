@@ -1,6 +1,6 @@
 ---
 name: glossaire
-description: "Tient le glossaire Excel unique de chaque gamme (Glossaires/Glossaire_<Gamme>.xlsx) avec ses 15 colonnes et ses 5 statuts fixes, le genre, le nombre et l'élision des noms inventés (déclarés par Hervé, jamais devinés), un tableau de bord, un CHANGELOG et une sauvegarde datée avant chaque modification ; cherche dans tous les glossaires, segments et livrables avant de proposer un terme. Sert à créer ou importer un glossaire (dont un ancien Excel ou CSV), ajouter, valider, geler, archiver ou corriger un terme partout, contrôler un glossaire par programme, préparer une copie pour un traducteur ou un relecteur. Se déclenche quand Hervé dit « ajoute ce terme au glossaire », « valide ce terme », « on garde X pour Y », « importe mon glossaire », « crée le glossaire de la gamme », « corrige ce terme partout », « quel terme on a pris pour X », « ce mot existe déjà ? », « quel genre pour ce nom », « contrôle le glossaire », « prépare le glossaire pour le relecteur »."
+description: "Tient le glossaire Excel unique de chaque gamme (Glossaires/Glossaire_<Gamme>.xlsx) : 15 colonnes, 5 statuts, genre, nombre et élision des noms inventés (déclarés par Hervé, jamais devinés), tableau de bord, CHANGELOG, sauvegarde datée avant chaque modification ; cherche dans tous les glossaires, segments et livrables avant de proposer un terme. Créer ou importer un glossaire (dont un ancien Excel ou CSV), ajouter, valider, geler, archiver, corriger un terme partout, contrôler par programme, préparer une copie pour un traducteur ou un relecteur. Se déclenche sur « ajoute ce terme au glossaire », « valide ce terme », « on garde X pour Y », « importe mon glossaire », « crée le glossaire de la gamme », « corrige ce terme partout », « quel terme on a pris pour X », « ce mot existe déjà ? », « quel genre pour ce nom », « contrôle le glossaire », « prépare le glossaire pour le relecteur »."
 ---
 
 # Glossaire — un fichier par gamme, une seule vérité par terme
@@ -27,7 +27,7 @@ Les programmes sont dans `${CLAUDE_SKILL_DIR}/scripts/` (Python 3, bibliothèque
 aucun n'écrit** : ils affichent ce qu'ils feraient. Une décision qu'Hervé vient de dire (« valide ce
 terme », « on garde X pour Y ») s'écrit directement avec `--ecrire` : sa phrase est l'accord. Un import,
 une fusion, une correction partout ou une modification groupée se montre d'abord en essai, et ne s'écrit
-qu'après son oui. Commandes et options : `references/scripts.md`.
+qu'après son oui. Commandes et options : `references/scripts.md`. Une commande citée en abrégé (`gerer_glossaire.py …`) se lance toujours par le chemin complet du programme, avec chaque fichier d'Hervé en chemin complet sous HERVÉ WORLD : règle « Écrire une commande » du skill `noyau`. <!-- [R-29] -->
 
 ---
 
@@ -41,7 +41,9 @@ qu'après son oui. Commandes et options : `references/scripts.md`.
   bord l'affiche. Un seul fichier « actuel », donc.
 - **Jamais deux glossaires maîtres pour une même gamme.** Avant de créer ou d'importer, AURA regarde
   dans `Glossaires/` ; le programme refuse aussi un nom voisin (`Glossaire_TaintedGrail` à côté de
-  `Glossaire_Tainted Grail`). Un glossaire qui arrive pour une gamme qui en a déjà un se **fusionne**.
+  `Glossaire_Tainted Grail`), sauf le fichier qu'on importe lui-même (une source non standard déjà
+  rangée là, comme la démo : voir `references/import.md`, règle 3). Un glossaire qui arrive pour une
+  gamme qui en a déjà un se **fusionne**.
 - Les copies données à d'autres (traducteur, relecteur, éditeur) sont des **exports** nommés par
   produit et datés, rangés dans `Livrables/<Projet>/` : `Glossaire_<Gamme>_<Produit>_AAAA-MM-JJ.xlsx`.
   Ils ne remplacent jamais le maître.
@@ -161,9 +163,9 @@ rien. Avant de proposer un terme français :
    exhausted, exhausting*) dans **tous** les glossaires de la gamme et des autres gammes du même éditeur,
    dans les segments réutilisables (`Références/Segments/`), les références, les livrables passés et
    en cours. Le programme le fait d'un coup, avec les comptes :
-   `python3 chercher_terme.py "<dossier HERVÉ WORLD>" "Exhaust"`
+   `python3 "${CLAUDE_SKILL_DIR}/scripts/chercher_terme.py" "<HERVÉ WORLD>" "Exhaust"`
 2. **Vérifier que le français candidat n'est pas déjà pris** pour autre chose :
-   `python3 chercher_terme.py "<dossier>" "Épuiser" "épuisé" "épuisez" --langue fr` (pour un verbe
+   `python3 "${CLAUDE_SKILL_DIR}/scripts/chercher_terme.py" "<HERVÉ WORLD>" "Épuiser" "épuisé" "épuisez" --langue fr` (pour un verbe
    français, on donne ses formes).
 3. **Lire les fichiers NON FOUILLÉS** que le programme liste (PDF, fichier illisible) : tant qu'ils
    n'ont pas été lus autrement, l'absence n'est pas prouvée, et AURA le dit.
@@ -205,7 +207,7 @@ en Brouillon, traduire, puis valider.
 éditeur du JJ/MM » ou « décision d'Hervé du JJ/MM », la ligne du registre des questions est close avec
 son « impact glossaire ». Une seule commande fait la modification, la date, la ligne de CHANGELOG et la
 sauvegarde :
-`python3 gerer_glossaire.py modifier <glossaire> --id T-0012 --champ STATUT=Confirmé --champ GENRE=f --par "Hervé" --raison "validé en séance du JJ/MM"`
+`python3 "${CLAUDE_SKILL_DIR}/scripts/gerer_glossaire.py" modifier <glossaire> --id T-0012 --champ STATUT=Confirmé --champ GENRE=f --par "Hervé" --raison "validé en séance du JJ/MM"`
 Plusieurs décisions d'un coup : un petit tableau `ID;CHAMP;VALEUR;RAISON;PAR` passé avec `--lot`.
 
 **Ce qu'on n'y met pas** : les mots génériques sans risque d'ambiguïté (*player*, *round*), sauf si
@@ -230,7 +232,7 @@ Hervé corrige un terme :
 
 1. **Chercher l'ancien français partout** — tous les glossaires, segments, Références, livrables en cours,
    `Core/Preferences.md`, `Core/evas.md` — avec ses formes :
-   `python3 chercher_terme.py "<dossier>" "<ancien terme>" "<ses formes>" --langue fr --tout`
+   `python3 "${CLAUDE_SKILL_DIR}/scripts/chercher_terme.py" "<HERVÉ WORLD>" "<ancien terme>" "<ses formes>" --langue fr --tout`
 2. **Montrer la liste à Hervé AVANT de remplacer** : nombre total, nombre par fichier, chaque endroit
    avec son extrait, et ce qu'AURA propose pour chacun :
    - *à remplacer* : glossaires (ligne active), segments, livrables **en cours** (sur la copie de travail
@@ -279,7 +281,7 @@ Aucun terme n'arrive pré-validé : son statut d'origine est gardé en NOTES, et
    modifié.
 2. AURA vérifie s'il existe déjà un glossaire maître pour cette gamme : si oui, ce sera une **fusion**
    (`--dans`), jamais un second maître.
-3. Essai : `gerer_glossaire.py importer <fichier> --gamme "<Gamme>" --sortie Glossaires/Glossaire_<Gamme>.xlsx --provenance "<d'où vient ce glossaire>"`.
+3. Essai : `python3 "${CLAUDE_SKILL_DIR}/scripts/gerer_glossaire.py" importer "<HERVÉ WORLD>/IMPORT/<fichier>" --gamme "<Gamme>" --sortie "<HERVÉ WORLD>/Glossaires/Glossaire_<Gamme>.xlsx" --provenance "<d'où vient ce glossaire>"`.
    AURA montre à Hervé le **nombre réel** de termes compté par le programme, la correspondance des
    colonnes, les statuts d'origine, les catégories proposées, les cellules à double proposition, les
    genres à déclarer, et, pour une fusion, les conflits (non appliqués).
@@ -304,12 +306,14 @@ NOMBRE, ÉLISION et STATUT), `CHANGELOG`, et une `Notice` d'une page. Détail :
 
 ## 11. Contrôler un glossaire
 
-`python3 controle_glossaire.py Glossaires/Glossaire_<Gamme>.xlsx` — lecture seule. Il signale, avec des
+`python3 "${CLAUDE_SKILL_DIR}/scripts/controle_glossaire.py" "<HERVÉ WORLD>/Glossaires/Glossaire_<Gamme>.xlsx"` — lecture seule. Il signale, avec des
 comptes exacts : onglets ou colonnes manquants ou mal nommés, statut ou catégorie hors liste, ID vide ou
 en double, EN en double, même français pour deux anglais différents (à vérifier), genre vide là où il est
 obligatoire, Gelé sans PUBLIÉ DANS, Confirmé sans français, cellule à double proposition, termes
-« À confirmer » qui attendent depuis plus de 30 jours. Avec plusieurs fichiers, il compare aussi les
-gammes entre elles (section 5).
+« À confirmer » qui attendent depuis plus de 30 jours, et ce qu'une écriture par le programme ne
+saurait pas garder (colonne ajoutée au CHANGELOG, commentaire Excel : `references/classeur-excel.md`).
+Avec plusieurs fichiers, il compare aussi les gammes entre elles (section 5). Il ne lit que le
+glossaire : chercher un ancien terme dans un texte traduit relève du skill `qa-coherence`.
 
 AURA lance ce contrôle après chaque import ou modification groupée, avant de partager un glossaire, et à
 l'audit mensuel. Elle rapporte les chiffres tels quels, sans arrondir.

@@ -1,6 +1,6 @@
 ---
 name: qa-coherence
-description: "Vérification CIBLÉE d'un point précis dans un texte traduit de jeu de société, avec l'endroit exact de chaque occurrence : un renvoi (« voir règle 5.2 » mène-t-il à la bonne règle ?), la numérotation des règles (trous, doublons, règle de la version originale absente), un symbole ou une icône (bon nom, bonne signification mécanique), ou un seul point vérifié partout (un mot ou une variante qui traîne, un nom anglais oublié). AURA cherche elle-même par script dans le .docx, .xlsx ou .csv déposé, tient la table des renvois et le dictionnaire des symboles, prépare les questions à l'éditeur. À utiliser quand Hervé dit « vérifie ce renvoi », « les numéros de règles sont-ils bons ? », « ce symbole est-il le bon ? », « cherche toutes les occurrences de… », « ce mot traîne-t-il encore quelque part ? ». Pas pour relire tout un texte avant livraison (relecture-multi-agents), ni pour la typographie (typographie-fr), la longueur et les balises (controle-longueur), le choix d'un terme (glossaire)."
+description: "Vérification CIBLÉE d'un point précis dans un texte traduit de jeu de société, avec l'endroit exact de chaque occurrence : un renvoi (« voir règle 5.2 » mène-t-il à la bonne règle ?), la numérotation des règles (trous, doublons, règle absente), un symbole ou une icône (nom, sens mécanique), ou un mot qui traîne partout (variante, nom anglais oublié). Cherche par script dans le .docx, .xlsx ou .csv déposé, tient la table des renvois et le dictionnaire des symboles, prépare les questions à l'éditeur. Quand Hervé dit « vérifie ce renvoi », « les numéros de règles sont-ils bons ? », « ce symbole est-il le bon ? », « cherche toutes les occurrences de… », « ce mot traîne-t-il encore quelque part ? ». Pas pour relire tout un texte (relecture-multi-agents), la typographie (typographie-fr), la longueur et les balises (controle-longueur), le choix d'un terme (glossaire)."
 ---
 
 # qa-coherence — vérifier un point précis, partout, avec l'endroit exact
@@ -17,7 +17,7 @@ Ce skill répond à **une** question précise sur un texte : un renvoi, une num�
 | « relis tout avant livraison », « est-ce que je peux livrer ? », « relecture complète » | `relecture-multi-agents` (qui utilise les scripts de ce skill) |
 | espaces insécables, guillemets, apostrophes, majuscules | `typographie-fr` |
 | texte qui déborde, balises ou icônes perdues entre l'anglais et le français | `controle-longueur` |
-| le bon terme français, une variante non autorisée au regard du glossaire | `glossaire` |
+| le bon terme français, la décision sur un terme | `glossaire` |
 
 Quand la demande est ambiguë (« vérifie le chapitre 3 » : un point, ou tout ?), AURA pose une seule question avant de commencer.
 
@@ -42,7 +42,7 @@ Quand la demande est ambiguë (« vérifie le chapitre 3 » : un point, ou tout 
 AURA fait la recherche **elle-même**, par script, sur le fichier d'Hervé. Hervé n'a ni expression régulière à écrire, ni macro, ni ligne de commande à taper.
 
 1. **Le fichier** : Hervé le dépose dans la conversation, ou il est déjà dans l'espace de travail de la tâche (sa copie de travail dans `Livrables/<Projet>/`). On ne travaille jamais sur l'original de l'éditeur. Avant de lancer un script, AURA applique la règle « Les programmes et le dossier d'Hervé » du skill `noyau` (le programme voit-il le fichier ? sinon, le glisser ; sans lecture par le programme, aucun contrôle n'est présenté comme fait).
-2. **Les scripts**, dans le dossier `scripts/` de ce skill (Python, bibliothèque standard, lisent .docx, .xlsx, .csv, .tsv, .txt, .md) :
+2. **Les scripts**, dans `${CLAUDE_SKILL_DIR}/scripts/` (Python, bibliothèque standard, lisent .docx, .xlsx, .csv, .tsv, .txt, .md) ; chaque commande se lance avec le programme et les fichiers en chemins complets (règle « Écrire une commande » du skill `noyau`) : <!-- [R-29] -->
    - `renvois.py TEXTE [--source VO] [--regles LIVRET]` — renvois internes et numéros de règle (point 2).
    - `chercher.py FICHIER MOT [MOT…] [--liste fichier] [--colonne EN] [--si STATUT=Archivé] [--debut | --racine] [--strict]` — toutes les occurrences d'un ou plusieurs mots, avec leur endroit et leurs formes (points 3 et 4).
    - Chacun a un essai intégré sur une copie sabotée : `--auto-test`. AURA le lance la première fois qu'elle s'en sert dans une tâche ; s'il échoue, elle ne se fie pas au script et le dit.
@@ -55,14 +55,23 @@ Si Hervé préfère chercher lui-même dans Word, les procédures **valides** (W
 ## 1. Les erreurs que ce skill sait trouver
 
 1. **Renvoi cassé** — « voir règle 5.2 », mais la 5.2 de la traduction ne parle pas de ce que le texte promet : la numérotation a glissé, ou le contenu a bougé.
-2. **Numéro de règle faux** — « 5,2 » au lieu de « 5.2 », « règle 52 », deux règles 6.1, une 5.3 qui manque, une règle de la VO absente de la traduction. Invisible à la relecture, fatal à la table.
+2. **Numéro de règle faux** — « 5,2 » au lieu de « 5.2 », « règle 52 » au lieu de « 5.2 » (relevé à lire ; la comparaison avec la VO le montre aussi quand la VO y a un renvoi « 5.2 »), deux règles 6.1, une 5.3 qui manque, une règle de la VO absente de la traduction. Invisible à la relecture, fatal à la table.
 3. **Symbole mal identifié** — deux icônes proches confondues dans le texte : le coût pris pour un gain, l'effet sur soi pris pour l'effet sur l'adversaire.
 4. **Un point incohérent** — un mot qui traîne (« Bouger » quand la gamme dit « Déplacer »), un nom anglais oublié, une majuscule appliquée ici et pas là.
 
 Ce que ce skill ne cherche pas, et qui va ailleurs : <!-- [D-20] -->
 - **La typographie française** (espaces, guillemets, apostrophes, majuscules accentuées, majuscule des termes de jeu) : skill `typographie-fr`. Ce skill n'en énonce aucune règle.
 - **Le texte tronqué ou trop long, et les balises ou icônes perdues** (`{icon_sword}`, `<b>`, `[damage]`) : skill `controle-longueur`, qui a le script de contrôle segment par segment.
-- **Les variantes d'un terme au regard du glossaire** : skill `glossaire` (son contrôle `controle_glossaire`).
+
+<!-- [R-40] [R-53] -->
+**Les variantes d'un terme au regard du glossaire** se cherchent ici, avec deux limites à dire à Hervé :
+- **les variantes connues** — les anciens termes que le glossaire a archivés — se trouvent par script,
+  chacune avec son endroit : `python3 "${CLAUDE_SKILL_DIR}/scripts/chercher.py" "<texte>" --liste "<HERVÉ WORLD>/Glossaires/Glossaire_<Gamme>.xlsx" --colonne FR --si STATUT=Archivé --racine`
+  (section 4). Le contrôle `controle_glossaire.py` du skill `glossaire` ne lit que le glossaire, jamais
+  un texte traduit : il ne trouve aucune variante dans une traduction ;
+- **une variante jamais entrée au glossaire** (« Bouger » quand seul « Déplacer » y figure) ne se trouve
+  par aucun script : seulement à la lecture (skill `relecture-multi-agents`, lecture par lots). AURA ne
+  dit donc jamais « aucune variante » sur la seule foi d'un script.
 
 **Quand le temps manque** (moins de 48 heures avant la livraison) : d'abord les renvois et les numéros de règle — ce sont eux qui rendent un jeu injouable — puis les symboles.
 
@@ -71,7 +80,7 @@ Ce que ce skill ne cherche pas, et qui va ailleurs : <!-- [D-20] -->
 ## 2. Renvois et numéros de règle
 
 **La méthode.**
-1. **Lancer `renvois.py`** sur la traduction, avec la VO si Hervé l'a (`--source`). Pour un fichier de cartes qui renvoie au livret, ajouter le livret avec `--regles`. Le script liste : les renvois vers une règle introuvable, les numéros définis deux fois, les trous dans une suite, les numéros écrits avec une virgule, les règles de la VO absentes de la traduction, les renvois en nombre différent entre VO et traduction, et tous les renvois de page.
+1. **Lancer `renvois.py`** sur la traduction, avec la VO si Hervé l'a (`--source`). Pour un fichier de cartes qui renvoie au livret, ajouter le livret avec `--regles`. Le script liste : les renvois vers une règle introuvable, les numéros définis deux fois, les trous dans une suite, les numéros écrits avec une virgule, les règles de la VO absentes de la traduction, les renvois en nombre différent entre VO et traduction, et tous les renvois de page. Le script ne juge que les numéros à plusieurs niveaux (5.2). Un renvoi à un seul niveau (« règle 52 », « voir règle 7 », « règle n° 7 ») est relevé juste après un mot-clé (règle, section, chapitre, paragraphe, §) ou dans la suite d'une liste de renvois (« règles 3, 4 et 13 ») ; s'il ne correspond à aucun titre « Règle 7 — … », « Chapitre 7 » ni à des règles 7.1, 7.2, il sort « À lire » : zone du plateau, autre livret, étape d'une liste ou faute, le programme ne peut pas trancher. AURA lit chaque phrase et dit ce qu'elle en conclut. « voir 7 » seul n'est pas relevé : AURA le cherche à la lecture. La faute « règle 52 » pour « 5.2 » se voit aussi dans la comparaison avec la VO (le 5.2 perdu). <!-- [R-62] -->
 2. **Vérifier le contenu de chaque renvoi** : pour chaque « voir règle X.Y », ouvrir la règle X.Y et vérifier qu'elle parle bien de ce que le texte promet. Le script trouve les renvois ; il ne juge pas leur sens.
 3. **Vérification dans les deux sens** : si la 4.3 renvoie à la 7.1, la 7.1 traite-t-elle bien du même sujet ?
 4. **Renvois de page** : tous marqués `[PAGE À CONFIRMER]` dans la traduction. Ils se remplissent sur l'épreuve mise en page, jamais sur le Word. Le script compte ceux qui n'ont pas encore le marqueur.

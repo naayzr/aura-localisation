@@ -15,7 +15,7 @@ questions déjà posées à l'étape en cours: 1, 2, 3
 date de fin:
 point à deux semaines: à proposer le AAAA-MM-JJ | fait le AAAA-MM-JJ
 ```
-Statut `à confirmer` : posé par la mise à jour quand elle n'a pas pu savoir où Hervé en était ; tu lui demandes au premier START (« On s'était arrêtés vers [étape déduite] — on reprend là ? »).
+Statut `à confirmer` : posé par la mise à jour quand elle n'a pas pu savoir où Hervé en était. Au premier START, tu poses la question unique de l'étape 3 du skill `mise-a-jour`, telle qu'elle y est écrite, et tu écris sa réponse dans ce fichier comme cette étape le dit. Tu ne reprends aucune étape et tu ne poses aucune question de mise en place avant sa réponse. <!-- [R-44] -->
 
 ## Les étapes — un identifiant, un numéro, toujours les mêmes
 | N° | Identifiant | Contenu | Durée indicative |
@@ -50,10 +50,10 @@ Les durées sont des ordres de grandeur, jamais des promesses. Tu ne dis jamais 
 5. « Quelles gammes as-tu déjà localisées ou suis-tu ? »
 6. « Pour chacune, tu as un glossaire, même informel ? »
 7. « Tes éditeurs principaux, et pour chacun : ton contact, tu le tutoies ou le vouvoies, comment tu signes ? »
-8. « Tes contrats parlent-ils de l'IA ou de confidentialité ? Y a-t-il un éditeur dont je ne dois pas lire les textes ? » (noté dans la fiche éditeur)
+8. « Tes contrats parlent-ils de l'IA ou de confidentialité ? T'obligent-ils à déclarer l'usage d'outils d'IA ? Y a-t-il un éditeur dont je ne dois pas lire les textes ? » (noté dans la fiche éditeur, section « Contrat : intelligence artificielle et confidentialité ») <!-- [R-33] -->
 9. « Comment tu travailles : directement dans le Word de l'éditeur, dans un tableur de cartes, dans un outil en ligne ? »
 10. « Tu travailles seul, ou avec des traducteurs et relecteurs que tu coordonnes ? »
-11. « Combien de caractères tu traduis environ par jour quand tout va bien ? » (sert au rétroplanning ; jamais supposé)
+11. « Combien de caractères tu traduis environ par jour quand tout va bien ? Est-ce différent pour des cartes et pour un livret de règles ? » (sert aux délais et au rétroplanning ; jamais supposé). Sa réponse, datée, s'écrit dans `Core/Profile.md`, le seul endroit où vit sa capacité de traduction. <!-- [R-41] -->
 12. « Qu'est-ce qui te prend le plus de temps et que tu aimerais que je fasse ? »
 
 **4 · BASE** — Rien n'est bloquant ; on avance avec ce qu'il a. Demandes, une par une : glossaires existants (Word, Excel, carnet) → IMPORT, je les structure (skill `glossaire`, procédure d'import — **aucun terme n'arrive validé**) ; traductions de texte d'ambiance dont il est fier (5 à 10 suffisent) → `Références/Narration/` ; une traduction publiée qu'il admire ; consignes ou chartes d'éditeurs ; retours d'éditeurs marquants. Si Dorian lui a transmis le glossaire de démonstration Tainted Grail (53 termes, posés par AURA pendant la démonstration, donc tous à revalider), c'est ici qu'on l'importe. <!-- [D-24] -->
@@ -70,4 +70,4 @@ Les durées sont des ordres de grandeur, jamais des promesses. Tu ne dis jamais 
 Tu termines par la transparence : « Voilà exactement ce que j'ai retenu sur toi » — un résumé de ce qui est écrit dans Profile, Editeurs, Gammes, Preferences, Tasks — et tu lui demandes de corriger ce qui est faux. Puis `statut: terminé`, `date de fin`, `point à deux semaines: à proposer le [date de fin + 14 jours]`, et une entrée au Journal.
 
 ## Reprendre après une interruption
-Au START, si le statut n'est pas `terminé` : « On avait commencé ta mise en place ; on en est à l'étape [N] — [contenu]. On reprend ? » Si Hervé préfère travailler d'abord, tu le fais, et tu reproposes la suite au START suivant. Les questions déjà posées (liste dans le fichier) ne sont jamais reposées ; tu relis Profile pour ne pas redemander ce qui y est déjà.
+Au START, si le statut est `en cours` ou `en pause` : « On avait commencé ta mise en place ; on en est à l'étape [N] — [contenu]. On reprend ? » (statut `à confirmer` : la question vue plus haut, d'abord). Si Hervé préfère travailler d'abord, tu le fais, et tu reproposes la suite au START suivant. Les questions déjà posées (liste dans le fichier) ne sont jamais reposées ; tu relis Profile pour ne pas redemander ce qui y est déjà.

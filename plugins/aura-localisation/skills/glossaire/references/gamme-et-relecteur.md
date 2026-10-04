@@ -54,7 +54,7 @@ s'invente pas.
 
 ## Préparer le glossaire pour un traducteur ou un relecteur
 
-`gerer_glossaire.py exporter Glossaires/Glossaire_<Gamme>.xlsx --sortie "Livrables/<Projet>/Glossaire_<Gamme>_<Produit>_AAAA-MM-JJ.xlsx" --pour relecteur`
+`python3 "${CLAUDE_SKILL_DIR}/scripts/gerer_glossaire.py" exporter "<HERVÉ WORLD>/Glossaires/Glossaire_<Gamme>.xlsx" --sortie "<HERVÉ WORLD>/Livrables/<Projet>/Glossaire_<Gamme>_<Produit>_AAAA-MM-JJ.xlsx" --pour relecteur`
 (`--pour traducteur` pour un brief de traduction du skill `gestion-gamme`).
 
 La copie contient :
@@ -79,7 +79,7 @@ relecteur ponctuel, il l'enregistre en PDF depuis Excel ; les retours arrivent a
 
 ## Intégrer les retours
 
-`gerer_glossaire.py retours "<fichier renvoyé>"` liste les remarques par code, avec leur nombre exact.
+`python3 "${CLAUDE_SKILL_DIR}/scripts/gerer_glossaire.py" retours "<HERVÉ WORLD>/IMPORT/<fichier renvoyé>"` liste les remarques par code, avec leur nombre exact.
 On les traite dans cet ordre :
 - **[ERR]** d'abord : corriger le glossaire **et** le texte traduit, puis chercher si le terme fautif
   apparaît dans d'autres projets (procédure « corriger un terme partout »).

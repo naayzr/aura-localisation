@@ -1,11 +1,11 @@
 # Relecteurs en parallèle — sur demande expresse d'Hervé seulement <!-- [D-03] -->
 
-La relecture standard (scripts, puis lecture par lots par AURA) est la règle. Ce fichier ne sert que si Hervé demande **expressément** plusieurs relecteurs en parallèle. Le plafond et l'ordre « fichiers, puis scripts, puis agents » sont des règles du skill `noyau`.
+La relecture standard (scripts, puis lecture par lots par AURA) est la règle. Ce fichier ne sert que si Hervé demande **expressément** plusieurs relecteurs en parallèle. Le seuil d'accord et l'ordre « fichiers, puis scripts, puis agents » sont la règle des agents du skill `noyau` (ses règles de travail, « Dépenser juste »).
 
 ## 1. Préparer le plan
 
 ```
-python3 scripts/lots.py <fichier> --relecteurs 3 --angles logique,style,renvois --plan Livrables/<Projet>/relecture
+python3 "${CLAUDE_SKILL_DIR}/scripts/lots.py" <fichier> --relecteurs 3 --angles logique,style,renvois --plan "<HERVÉ WORLD>/Livrables/<Projet>/relecture"
 ```
 
 Si le programme ne voit pas le dossier (la règle « Les programmes et le dossier d'Hervé » du skill `noyau`), `PLAN.txt` est écrit sur la machine du programme : AURA le relit et le **réécrit elle-même** dans `Livrables/<Projet>/relecture/PLAN.txt`, sinon il disparaît avec la tâche.
@@ -24,7 +24,7 @@ Texte type, chiffres tirés de la sortie de `lots.py` :
 >
 > La relecture standard, sans relecteurs parallèles, couvre les mêmes angles en lisant les lots l'un après l'autre, pour bien moins. Je lance les 15 lancements, ou je fais la relecture standard ?
 
-**Plus de 3 lancements au total : AURA attend un « oui » explicite** à cette question. Jusqu'à 3 (par exemple 3 angles sur un seul lot), elle lance après l'annonce. Un « oui » vaut pour cette relecture-là, pas pour les suivantes.
+**Au-delà du seuil de la règle des agents du skill `noyau`, AURA attend un « oui » explicite** à cette question ; en deçà, elle lance après l'annonce. La règle est appliquée telle qu'elle y est écrite, sans la redire ici. <!-- [R-37] -->
 
 ## 3. Lancer
 

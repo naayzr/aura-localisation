@@ -75,21 +75,56 @@ def empreinte(chemin):
     return hashlib.sha256(Path(chemin).read_bytes()).hexdigest()
 
 
+# ------------------------------------------------------------------ fichiers produits
+def sortie_libre(chemin):
+    """Un rapport ou un fichier produit ne remplace jamais un fichier existant (Livrables/ est la
+    mémoire d'Hervé) : s'il existe déjà, arrêt avec le code 2, avant tout calcul."""
+    if chemin:
+        lecture.hors_du_plugin(chemin)
+    if chemin and Path(chemin).exists():
+        arret(f"{chemin} existe déjà : choisis un autre nom (on n'écrase jamais un fichier).")
+    return chemin
+
+
+def ecrire_sortie(chemin, texte):
+    """Écrit un fichier NOUVEAU (mode « x » : refus si le fichier est apparu entre-temps)."""
+    sortie_libre(chemin)
+    try:
+        with open(chemin, "x", encoding="utf-8") as f:
+            f.write(texte)
+    except FileExistsError:
+        arret(f"{chemin} existe déjà : choisis un autre nom (on n'écrase jamais un fichier).")
+
+
 # ------------------------------------------------------------------ tableaux
-def colonne(entetes, spec):
-    """Index d'une colonne : nom d'en-tête (casse ignorée), lettre (A, B…) ou numéro (1, 2…)."""
+def colonne(entetes, spec, corps=None):
+    """Index d'une colonne : nom d'en-tête (casse ignorée), lettre (A, B…) ou numéro (1, 2…).
+
+    Une lettre ou un numéro n'est accepté que s'il désigne une colonne du tableau lu qui porte un
+    en-tête ou au moins une valeur (`corps` : lignes [(numéro, cellules)]). Sinon, arrêt : un nom
+    d'en-tête mal tapé (« FR », « ID », « TX ») ne devient jamais, en silence, une colonne Excel vide.
+    """
     bas = [e.strip().lower() for e in entetes]
     s = spec.strip()
     if s.lower() in bas:
         return bas.index(s.lower())
+    lus = ", ".join(e for e in entetes if e) or "aucun"
+    i = None
     if re.fullmatch(r"[A-Za-z]{1,3}", s):
         n = 0
         for c in s.upper():
             n = n * 26 + ord(c) - 64
-        return n - 1
-    if s.isdigit():
-        return int(s) - 1
-    arret(f"Colonne « {spec} » introuvable. En-têtes lus : {', '.join(e for e in entetes if e)}")
+        i = n - 1
+    elif s.isdigit() and int(s) >= 1:
+        i = int(s) - 1
+    if i is None:
+        arret(f"Colonne « {spec} » introuvable. En-têtes lus : {lus}")
+    porte = (i < len(entetes) and entetes[i].strip()) or any(cellule(l, i) for _, l in corps or [])
+    if not porte:
+        arret(f"Colonne « {spec} » introuvable : ce n'est pas un en-tête du tableau, et la colonne n° {i + 1} "
+              f"qu'elle désignerait comme lettre ou numéro est vide ou hors du tableau. En-têtes lus : {lus}. "
+              "Donne le nom exact de l'en-tête.")
+    return i
 
 
 def deviner_colonne(entetes, langue):

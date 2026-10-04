@@ -1,6 +1,6 @@
 ---
 name: brief-editeur
-description: "Relations d'Hervé avec ses éditeurs. Rédige en brouillon, jamais envoyé, les e-mails à l'éditeur : questions groupées tirées du registre Core/Questions_Editeurs.md, réponse à une liste de remarques, e-mail de livraison, cadrage d'un projet, réponse à une demande de modification, relance, retours sur épreuve. Reporte les réponses de l'éditeur ; un terme validé part au glossaire avec sa trace. Tient la fiche Core/Editeurs/<Éditeur>.md : contacts vérifiés, tu ou vous, signature d'Hervé, usages propres à l'éditeur, clauses du contrat sur l'IA et la confidentialité. Donne des repères datés et sourcés sur contrat, délais de paiement et mentions légales de la boîte, à faire valider. Déclencheurs : « écris à l'éditeur », « prépare un mail pour… », « envoie mes questions à l'éditeur », « l'éditeur a répondu », « il me renvoie ses remarques », « relance l'éditeur », « mail de livraison », « il demande une modification », « mentions légales », « clause du contrat », « délai de paiement », « fiche éditeur »."
+description: "Relations d'Hervé avec ses éditeurs. Rédige en brouillon, jamais envoyé, les e-mails à l'éditeur : questions groupées tirées de Core/Questions_Editeurs.md, réponse à des remarques, livraison, cadrage, demande de modification, relance, retours sur épreuve. Reporte les réponses (un terme validé part au glossaire). Tient la fiche Core/Editeurs/<Éditeur>.md : contacts, tu ou vous, signature, usages, politique sur les noms anglais, clauses sur l'IA et la confidentialité. Repères sourcés sur contrat, paiement et mentions légales, à faire valider. Déclencheurs : « écris à l'éditeur », « prépare un mail pour… », « envoie mes questions à l'éditeur », « l'éditeur a répondu », « il me renvoie ses remarques », « relance l'éditeur », « mail de livraison », « il demande une modification », « mentions légales », « clause du contrat », « délai de paiement », « fiche éditeur »."
 ---
 
 # Relations éditeurs — e-mails, questions, fiche éditeur
@@ -36,8 +36,15 @@ savoir de chacun avant de lui écrire.
 2. **Un e-mail classique** : remercier (pour les fichiers, la réponse, la confiance), dire l'objet en
    une phrase, lister les pièces jointes par leur nom de fichier exact, proposer la suite. Pas
    d'émotion appuyée, pas de formule creuse.
-3. **Jamais** de mention d'AURA, de l'intelligence artificielle, d'un assistant, d'un outil ou d'un
-   script, ni dans le message ni dans les pièces jointes : le travail présenté est celui d'Hervé.
+<!-- [R-33] -->
+3. **Mention d'AURA et de l'IA** (règle unique : les autres skills y renvoient). Par défaut, rien de
+   ce qui part chez un tiers (e-mail, pièce jointe, brief, synthèse de relecture, liste de corrections)
+   ne mentionne AURA, l'intelligence artificielle, un assistant, un outil ou un script : le travail
+   présenté est celui d'Hervé. **Sauf si le contrat l'exige** : quand la fiche de l'éditeur note une
+   obligation de déclarer l'usage d'outils d'IA, AURA le signale à Hervé avant de rédiger et propose la
+   mention prévue par le contrat, article cité ; Hervé décide de la formulation. Si la fiche ne dit
+   rien de cette obligation, AURA applique la section « Confidentialité et intelligence artificielle »
+   ci-dessous (la question se pose une fois à Hervé, sa réponse va dans la fiche).
 4. **Vérifier le contact avant d'écrire** : nom (orthographe exacte), fonction, civilité, tu ou vous,
    formule d'appel. Tout se lit dans la fiche éditeur. Ce qui manque se demande à Hervé, puis se note
    dans la fiche ; une civilité ne se devine jamais d'après un prénom.
@@ -75,7 +82,8 @@ La fiche contient :
 - les **habitudes** : formats, façon de recevoir les questions, jalons, délais de réponse, format des
   retours sur épreuve ;
 - les **écarts à la charte typographique**, avec leur source (pas les règles de la charte elle-même) ;
-- les **clauses du contrat sur l'intelligence artificielle et la confidentialité** ;
+- les **clauses du contrat sur l'intelligence artificielle et la confidentialité**, dont une
+  éventuelle obligation de déclarer l'usage d'outils d'IA ;
 - les **conditions convenues** utiles aux e-mails (rémunération, crédits, tarif des modifications),
   avec leur source ; le contrat fait foi.
 
@@ -94,8 +102,9 @@ service d'IA peut violer le contrat.
   (« Ta fiche indique que le contrat avec {éditeur} n'autorise pas l'IA. Veux-tu que j'ouvre ce fichier
   quand même ? »). Elle n'ouvre pas le fichier pour vérifier avant d'avoir la réponse.
 - Si la clause est **inconnue**, AURA le signale une fois, à la première tâche qui touche un fichier
-  de cet éditeur, propose à Hervé de vérifier son contrat, note sa réponse dans la fiche (avec la
-  date), et s'en tient ensuite à ce qui est noté.
+  de cet éditeur, propose à Hervé de vérifier son contrat (usage de l'IA permis ou non, et obligation
+  de le déclarer), note sa réponse dans la fiche (avec la date), et s'en tient ensuite à ce qui est
+  noté.
 - Cette règle vaut pour tous les skills qui lisent des fichiers source (traduction, comparaison de
   versions, relecture) : c'est la fiche qui décide, pas le skill en cours.
 - AURA n'interprète pas un contrat : elle note ce qu'Hervé ou le texte du contrat dit.
@@ -104,11 +113,12 @@ service d'IA peut violer le contrat.
 
 ## 1. Les questions à l'éditeur
 
-**Le registre** `Core/Questions_Editeurs.md` garde chaque question de sa naissance à sa réponse :
-n°, produit, référence de la carte ou de la règle, question, proposition d'Hervé, statut, réponse,
-date, impact sur le glossaire, posée par. Statuts : À envoyer → Envoyée → Répondue → Close, ou
-Retirée. Modèle, colonnes et cycle complet : `references/registre-questions.md`. AURA le crée s'il
-n'existe pas ; elle n'y efface jamais rien.
+<!-- [R-28] -->
+**Le registre** `Core/Questions_Editeurs.md` garde chaque question de sa naissance à sa réponse, une
+section par éditeur. Sa structure (modèle, colonnes, statuts, cycle complet, et la conduite à tenir
+devant un fichier d'une autre forme) n'est définie qu'à un endroit : `references/registre-questions.md`.
+Tout skill qui écrit une question renvoie à ce skill. AURA crée le registre s'il n'existe pas ; elle
+n'y efface jamais rien.
 
 **Capturer au fil de l'eau** : dès qu'une question apparaît en traduisant, elle entre au registre,
 statut « À envoyer ». Les questions venues d'autres traducteurs de l'équipe y sont fusionnées par le
@@ -135,8 +145,8 @@ gamme. Une ligne périmée passe « Retirée », avec la raison, au lieu d'être
 quand Hervé confirme l'avoir fait**, les lignes passent « Envoyée » avec la date et le numéro du lot.
 <!-- [I-04] -->
 Une ligne s'ajoute à `Core/Suivi.md` (« questions n° 12 à 18 envoyées à {éditeur} le {date}, réponse
-demandée avant le {date} ») ; elle sera retirée à la réponse, jamais recopiée telle quelle de séance
-en séance.
+demandée avant le {date} ») ; elle est close à la réponse selon la règle des fils du skill `noyau`
+(jamais effacée), jamais recopiée telle quelle de séance en séance. <!-- [R-27] -->
 
 **À ne jamais faire** : poser une question ouverte sans proposition ; mélanger l'urgent et le
 non-urgent sans les distinguer ; relancer avant le délai demandé ; poser une question déjà tranchée.
@@ -147,7 +157,7 @@ non-urgent sans les distinguer ; relancer avant le délai demandé ; poser une q
 
 **Une réponse aux questions** : chaque réponse est reportée sur sa ligne du registre (statut
 « Répondue », texte cité fidèlement), puis appliquée, puis la ligne passe « Close ». La ligne de
-`Core/Suivi.md` est retirée.
+`Core/Suivi.md` est close selon la règle des fils du skill `noyau` : jamais effacée.
 
 <!-- [I-06] -->
 **Une réponse « terme validé »** va au **seul glossaire**, par le skill `glossaire` : traduction

@@ -6,11 +6,14 @@ Usage : python3 controle_glossaire.py Glossaire_<Gamme>.xlsx [AUTRE.xlsx ...] [-
 Signale, avec des comptes exacts :
   ANOMALIE   onglets ou colonnes manquants, statut / catégorie / genre / nombre / élision hors liste,
              ID vide ou en double, ligne sans EN, EN en double (doublon probable), GENRE vide là où il est
-             obligatoire, Gelé sans PUBLIÉ DANS, Confirmé ou Gelé sans FR.
+             obligatoire, Gelé sans PUBLIÉ DANS, Confirmé ou Gelé sans FR ; ce qu'une écriture par le
+             programme perdrait, et qu'elle refuse donc : colonne hors standard ou cellule sans en-tête
+             dans CHANGELOG, commentaire Excel posé ailleurs que sur une ligne de terme.
   À VÉRIFIER même FR pour deux EN différents, même EN à deux sens (définitions différentes), FR à
              plusieurs propositions (« / »), GENRE « — » sur un PERSONNAGE / LIEU / OBJET / LORE,
              et, entre plusieurs glossaires, même EN traduit autrement (à rapprocher par la définition).
-  INFO       termes « À confirmer » depuis plus de N jours (colonne DATE).
+  INFO       termes « À confirmer » depuis plus de N jours (colonne DATE) ; commentaire Excel posé sur
+             un terme (repris dans ses NOTES à la prochaine écriture par le programme).
 Code de sortie : 0 sans anomalie, 1 s'il y a au moins une anomalie, 2 si le fichier est illisible.
 --auto-test : vérifie le programme lui-même sur des glossaires fabriqués (aucun fichier réel touché).
 """
@@ -45,7 +48,7 @@ def controler(chemin, attente_jours):
         note(ANOMALIE, "le Tableau de bord n'est pas le premier onglet", " > ".join(g["onglets"]))
     for o in g["onglets"]:
         if o not in M.ONGLETS:
-            note(INFO, "onglet hors standard (gardé tel quel)", o)
+            note(INFO, "onglet hors standard (une écriture par le programme est refusée tant qu'il est là)", o)
     if "Termes" not in g["onglets"]:
         note(ANOMALIE, "fichier hors format v3 : à passer par l'import (gerer_glossaire.py importer)",
              "onglets trouvés : " + ", ".join(g["onglets"]))
@@ -58,7 +61,7 @@ def controler(chemin, attente_jours):
         if c and e != c:
             note(ANOMALIE, "colonne mal nommée", f"« {e} » → écrire « {c} »")
         elif e and not c:
-            note(INFO, "colonne hors standard", e)
+            note(INFO, "colonne hors standard (une écriture par le programme est refusée tant qu'elle est là)", e)
         elif not e:
             note(INFO, "colonne sans en-tête", "")
     ordre = [c for c in canon if c]
@@ -72,6 +75,18 @@ def controler(chemin, attente_jours):
         manq = [c for c in M.CHANGELOG_COLONNES if c not in g["changelog_entetes"]]
         if manq:
             note(ANOMALIE, "colonne manquante au CHANGELOG", ", ".join(manq))
+        for e in g["changelog_hors_standard"]:
+            note(ANOMALIE, "colonne hors standard au CHANGELOG (une écriture par le programme la perdrait : refusée)", e)
+        if g["changelog_hors_entete"]:
+            note(ANOMALIE, "cellules remplies sans en-tête au CHANGELOG", str(g["changelog_hors_entete"]))
+    hors = M.commentaires_hors_termes(g)
+    for o, r, x in hors:
+        note(ANOMALIE, "commentaire Excel hors des lignes de termes (une écriture par le programme le perdrait : refusée)",
+             f"{o}!{r} : « {x} »")
+    for o, r, x in g["commentaires"]:
+        if (o, r, x) not in hors:
+            note(INFO, "commentaire Excel sur un terme (repris dans ses NOTES à la prochaine écriture par le programme)",
+                 f"{o}!{r} : « {x} »")
     # ---- lignes
     termes = g["termes"]
     ids = defaultdict(list)
@@ -220,6 +235,26 @@ def auto_test():
         M.ecrire_glossaire(b, "Sale", sales, ch)
         _, ca = controler(a, 30)
         _, cb = controler(b, 30)
+        # ce qu'une réécriture perdrait : colonne ajoutée au CHANGELOG, commentaires Excel (Termes, Notice)
+        c = Path(d) / "Glossaire_Retouche.xlsx"
+        M.ecrire_glossaire(c, "Retouche", propres, ch)
+
+        def colonne_en_plus(x):
+            for n, v in ((1, "MA NOTE"), (2, "à garder")):
+                fin = x.index("</row>", x.index(f'<row r="{n}">'))
+                x = x[:fin] + f'<c r="J{n}" t="inlineStr"><is><t>{v}</t></is></c>' + x[fin:]
+            return x
+        rels = ('<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship '
+                'Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/comments" '
+                'Target="../comments{n}.xml"/></Relationships>')
+        com = ('<comments xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><commentList>'
+               '<comment ref="{ref}" authorId="0"><text><t>{txt}</t></text></comment></commentList></comments>')
+        M._retoucher(c, changer={"xl/worksheets/sheet3.xml": colonne_en_plus},
+                     ajouter={"xl/worksheets/_rels/sheet2.xml.rels": rels.format(n=1),
+                              "xl/comments1.xml": com.format(ref="C2", txt="vérifier"),
+                              "xl/worksheets/_rels/sheet4.xml.rels": rels.format(n=2),
+                              "xl/comments2.xml": com.format(ref="A1", txt="à relire")})
+        _, cc = controler(c, 30)
     na = sum(len(v) for k, v in ca.items() if k[0] == ANOMALIE)
     attendus = ["EN en double (non archivé, sans définitions qui distinguent les sens)", "STATUT hors liste",
                 "ID en double", "Gelé sans PUBLIÉ DANS",
@@ -227,6 +262,13 @@ def auto_test():
     manquants = [x for x in attendus if (ANOMALIE, x) not in cb]
     manquants += [x for x in ("même FR pour plusieurs EN différents", "FR avec plusieurs propositions (« / ») : à trancher")
                   if (VERIF, x) not in cb]
+    retouches = {(ANOMALIE, "colonne hors standard au CHANGELOG (une écriture par le programme la perdrait : refusée)"):
+                 "MA NOTE",
+                 (ANOMALIE, "commentaire Excel hors des lignes de termes (une écriture par le programme le perdrait : "
+                            "refusée)"): "Notice!A1",
+                 (INFO, "commentaire Excel sur un terme (repris dans ses NOTES à la prochaine écriture par le "
+                        "programme)"): "Termes!C2"}
+    manquants += [k[1] for k, v in retouches.items() if not any(v in x for x in cc.get(k, []))]
     # la documentation (SKILL.md) et le programme portent les mêmes listes : une règle, une seule écriture
     import re
     doc = (Path(__file__).resolve().parent.parent / "SKILL.md").read_text(encoding="utf-8")
@@ -241,7 +283,8 @@ def auto_test():
               f"SKILL.md et programme discordants sur : {ecarts}")
         return 1
     print(f"AUTO-TEST OK — glossaire propre : 0 anomalie ; glossaire saboté : {len(attendus) + 2} défauts posés, "
-          "tous trouvés ; SKILL.md et programme concordent (colonnes, statuts, catégories)")
+          "tous trouvés ; glossaire retouché à la main : colonne ajoutée au CHANGELOG et commentaires Excel (sur un "
+          "terme, sur la Notice) tous signalés ; SKILL.md et programme concordent (colonnes, statuts, catégories)")
     return 0
 
 

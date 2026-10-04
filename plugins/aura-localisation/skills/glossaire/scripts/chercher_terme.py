@@ -115,7 +115,7 @@ def chercher(racine, rx, avec_archives):
     for p in sorted(Path(racine).rglob("*")):
         if not p.is_file():
             continue
-        rel = p.relative_to(racine).as_posix()
+        rel = M.nfc(p.relative_to(racine).as_posix())   # « Références » NFD (macOS) = NFC (Windows)
         if p.name.startswith(("~$", ".")) or "/." in "/" + rel:
             continue
         if not avec_archives and rel.startswith("Core/Archives/"):
@@ -177,8 +177,16 @@ def auto_test():
         t = {c: "" for c in M.COLONNES}
         t.update({"ID": "T-0001", "EN": "Exhaust", "FR": "Épuiser", "STATUT": "Confirmé", "CATÉGORIE": "MÉCANIQUE"})
         M.ecrire_glossaire(r / "Glossaires/Glossaire_Test.xlsx", "Test", [t], [])
+        nfd = r / unicodedata.normalize("NFD", "Références") / "Narration"     # tel que macOS l'écrit
+        nfd.mkdir(parents=True)
+        (nfd / "voix.md").write_text("Exhaust\n", encoding="utf-8")
         rx = motif(variantes("Exhaust", "en", False))
         trouve, non_fouilles, _ = chercher(r, rx, False)
+        zones_nfd = {zone_de(k) for k in trouve if "voix.md" in k}
+        if zones_nfd != {zone_de("Références/Narration/voix.md")}:
+            print(f"AUTO-TEST ÉCHEC : dossier « Références » écrit en NFD classé {zones_nfd}")
+            return 1
+        trouve = {k: v for k, v in trouve.items() if "voix.md" not in k}
     comptes = {k: sum(n for *_, n in v) for k, v in trouve.items()}
     attendu = {"Core/Preferences.md": 1, "Références/Segments/s.csv": 2, "Livrables/Projet/r.docx": 2,
                "Glossaires/Glossaire_Test.xlsx": 1}

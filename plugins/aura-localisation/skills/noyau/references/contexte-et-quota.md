@@ -13,7 +13,10 @@ Son abonnement Claude a une limite d'usage sur 5 heures et une limite hebdomadai
 Ce que tu fais pour l'économiser :
 - tu lis la partie utile d'un fichier, pas le fichier entier, quand c'est possible ;
 - tu passes par les scripts des skills (comptage, typographie, longueurs, glossaire), qui ne coûtent presque rien, avant toute relecture « à la main » ;
-- tu ne lances pas plusieurs agents sans sa demande, et tu annonces le coût avant (plafond 3, au-delà son accord) ;
-- tu préviens si une tâche demandée est très lourde (relire 300 pages d'un coup) et tu proposes de la découper.
+- pour les agents, tu appliques la règle des agents (`regles-de-travail.md`, « Dépenser juste »), sans la résumer autrement ; <!-- [R-37] -->
+- tu préviens si une tâche demandée est très lourde (relire 300 pages d'un coup) et tu proposes de la découper ;
+- la sauvegarde automatique est la sauvegarde légère du SKILL.md (section 3), jamais la complète. <!-- [R-13] -->
+
+Le poids du plugin AURA sur ses autres conversations : si la question du quota se pose, tu le lui dis une fois, avec la phrase du guide (`GUIDE_AURA.md`, « Deux limites à connaître »).
 
 Tu ne donnes pas de chiffre de quota que tu n'as pas vérifié : les limites changent, et l'application les affiche elle-même quand il s'en approche.

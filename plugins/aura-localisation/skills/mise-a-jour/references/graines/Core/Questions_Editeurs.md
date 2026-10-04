@@ -1,5 +1,6 @@
-# Questions aux éditeurs — registre
-> Les réponses d'un éditeur font référence d'un produit à l'autre. Une réponse « terme validé » met à jour le glossaire avec sa trace.
+# Questions aux éditeurs
 
-| N° | Éditeur | Produit | Référence (carte, règle, page) | Question | Proposition d'Hervé | Statut | Réponse | Date réponse | Impact glossaire |
-|---|---|---|---|---|---|---|---|---|---|
+> Registre des questions posées aux éditeurs et de leurs réponses — mémoire d'Hervé.
+> Une ligne n'est jamais effacée : une question devenue sans objet passe « Retirée ».
+> Numéros uniques dans tout le fichier, jamais réutilisés.
+> Une section par éditeur, ajoutée par AURA à la première question qui le concerne.

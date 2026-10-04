@@ -6,7 +6,7 @@
       "name": "aura-localisation",
       "source": "./plugins/aura-localisation",
       "description": "AURA pour la traduction et la localisation de jeux de société (anglais → français).",
-      "version": "3.0.0"
+      "version": "3.0.1"
     }
   ]
 }

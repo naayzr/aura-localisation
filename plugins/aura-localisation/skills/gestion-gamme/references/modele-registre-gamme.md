@@ -56,6 +56,8 @@ mettre à jour des lignes. Il n'est jamais réécrit en entier, jamais supprimé
 - Licence : <oui / non>. Ayant droit : <nom>.
 - Document de référence fourni : <glossaire officiel, bible de l'univers…>, version du <date>.
 - Qui valide les termes de licence, et sous quel délai : <…>
+- Validation de la version française par l'ayant droit avant impression : <oui / non>, délai annoncé :
+  <N jours ouvrés> (source, date). C'est la durée donnée au rétroplanning (étape « validation »).
 - Les termes imposés eux-mêmes sont au glossaire (SOURCE = « glossaire officiel de licence, <document>,
   <date> »). Ici, seulement le cadre.
 
@@ -70,7 +72,8 @@ Remis à l'imprimeur → Publié ; ou Abandonné.
 
 ## Calendrier en cours
 
-Capacité de traduction donnée par Hervé : <N> caractères par jour ouvré (le AAAA-MM-JJ).
+Calcul du AAAA-MM-JJ, fait avec la capacité d'Hervé lue dans Core/Profile.md ce jour-là : <N> caractères
+par jour ouvré. (Un relevé daté : la capacité elle-même ne vit que dans Core/Profile.md.)
 
 | Produit | Étape | Début au plus tard | Fin au plus tard | Responsable | État |
 |---|---|---|---|---|---|
@@ -113,7 +116,8 @@ Dernier gel : AAAA-MM-JJ, à la publication de <produit>.
 | N° | Date | Produit | Origine (document de l'éditeur VO, date) | Passage (carte, page, règle) | Correction VO | Correction VF | Report (glossaire, texte, segments) | Statut |
 |---|---|---|---|---|---|---|---|---|
 
-Statut : À traiter → Traduit → Reporté dans la VF → Intégré à la réimpression <réf.>.
+Statut : À traiter → Traduit → Reporté dans la VF → Intégré à la réimpression <réf.>. Un erratum qui n'a
+pas encore ce dernier statut reste à intégrer à la prochaine réimpression.
 
 ## BAT
 
@@ -127,6 +131,9 @@ Statut : À traiter → Traduit → Reporté dans la VF → Intégré à la réi
 
 ---
 
+<!-- [R-51] -->
+La liste des statuts d'un erratum ci-dessus est la seule : le SKILL.md (partie 5) y renvoie.
+
 ## Exemple de lignes remplies [EXEMPLE FICTIF]
 
 <!-- [I-30] -->
@@ -139,4 +146,4 @@ Gamme inventée, pour montrer la forme. Aucun de ces noms ne désigne un jeu ou 
 
 | N° | Date | Produit | Origine | Passage | Correction VO | Correction VF | Report | Statut |
 |---|---|---|---|---|---|---|---|---|
-| E1 | 2026-10-20 | P1 | FAQ de l'éditeur VO du 2026-10-18 | règle 4.2, déplacement | « up to 2 spaces » → « up to 3 spaces » | « 2 cases maximum » → « 3 cases maximum » | texte VF, segments | À intégrer à la réimpression |
+| E1 | 2026-10-20 | P1 | FAQ de l'éditeur VO du 2026-10-18 | règle 4.2, déplacement | « up to 2 spaces » → « up to 3 spaces » | « 2 cases maximum » → « 3 cases maximum » | texte VF, segments | Reporté dans la VF |

@@ -39,7 +39,8 @@ Contenu, dans cet ordre :
 <!-- [I-12] -->
 Écriture : phrases complètes, chiffres exacts (« 82 cartes, 14 310 caractères »), aucun code interne
 (pas d'identifiant de glossaire, pas de « Brouillon » non expliqué, pas d'abréviation non traduite).
-Le brief ne mentionne ni AURA, ni l'intelligence artificielle, ni l'outil.
+Ce que le brief dit, ou non, de l'outil et de l'intelligence artificielle suit la règle « Mention
+d'AURA et de l'IA » du skill `brief-editeur`. <!-- [R-33] -->
 
 ## 2. L'attribution des lots
 
@@ -68,8 +69,8 @@ factions (140 000 caractères, 17,5 jours, donc 18 jours ouvrés).
   attendu le 2026-11-20, non livré »), relue au démarrage de chaque séance.
 <!-- [I-08] -->
 - Avant de signaler ou de relancer, AURA vérifie que le lot n'est pas déjà arrivé (fichier présent
-  dans `Livrables/<Projet>/`, tableau des lots à jour) ; une ligne périmée se retire de `Core/Suivi.md`
-  au lieu d'être recopiée.
+  dans `Livrables/<Projet>/`, tableau des lots à jour) ; une ligne périmée de `Core/Suivi.md` est close
+  selon la règle des fils du skill `noyau` (jamais effacée), au lieu d'être recopiée. <!-- [R-27] -->
 - À la livraison, contrôle de complétude **compté** : nombre de cartes ou de segments reçus contre
   attendus (« 82 sur 82 », ou « 80 sur 82 : manquent C097 et C112 »), identifiants intacts, balises
   intactes. Les contrôles automatiques de termes, de typographie et de longueur passent par les skills

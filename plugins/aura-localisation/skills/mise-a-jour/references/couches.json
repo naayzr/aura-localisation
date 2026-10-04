@@ -1,12 +1,14 @@
 {
  "version": "3.0",
- "regle": "La mise à jour écrit SEULEMENT les fichiers de « systeme_local » et l'amorce CLAUDE.md, et CRÉE les fichiers de « graines » qui n'existent pas encore. Elle ne modifie jamais un fichier existant de la couche mémoire.",
+ "regle": "Ce fichier liste des chemins et des repères, rien d'autre. Ce que la mise à jour a le droit d'en faire est écrit à un seul endroit : la règle d'or du skill mise-a-jour.",
  "amorce": "CLAUDE.md",
  "version_locale": "Core/VERSION.md",
  "systeme_local": [
   "Core/Skills.md",
   "GUIDE_AURA.md",
-  "GUIDE_OBSIDIAN.md",
+  "GUIDE_OBSIDIAN.md"
+ ],
+ "systeme_si_dossier_present": [
   "skills/_ANCIENNE_VERSION_LIRE_MOI.md"
  ],
  "graines": [
@@ -39,19 +41,57 @@
  "ligne_instructions": "Quand je travaille dans mon dossier HERVÉ WORLD, commence toujours par lire le fichier CLAUDE.md de ce dossier et applique-le.",
  "empreintes_v2": {
   "CLAUDE.md": {
+   "octets": 42333,
+   "sha256": "cd55fc7e07ceaad6c186d9fa730525fe4ecc4fd18a5206f50305fb2a580893ee",
    "lignes": 630,
-   "premiere_ligne": "# AURA — Assistant personnel de Hervé",
-   "derniere_ligne_commence_par": "*AURA Hervé — v2.0"
+   "temoins": {
+    "1": "# AURA — Assistant personnel de Hervé",
+    "11": "## Commandes de base",
+    "37": "## Onboarding — premier lancement",
+    "167": "### Étape 3 — Profil complet (20 min)",
+    "267": "### Étape 5 — Créer un skill sur mesure (10 min)",
+    "337": "## Auto-audit mensuel et boucle d'amélioration",
+    "450": "## Processus anti-hallucination — priorité absolue n°1",
+    "557": "| \"glossaire\", \"terme\", \"cohérence\", \"gamme\", \"mot clé\", \"terminologie\" | `glossaire` |",
+    "562": "| \"crée un outil\", \"j'aurais besoin d'un outil pour\" | `skill-creator` |",
+    "591": "- **Un glossaire par gamme, pas par projet.**",
+    "596": "## Architecture HERVÉ WORLD",
+    "630": "*AURA Hervé — v2.0, mis à jour le 2026-05-31. Onboarding restructuré, skill relecture-multi-agents ajouté, processus de montée en volume intégrés.*"
+   }
   },
   "Core/Skills.md": {
+   "octets": 6231,
+   "sha256": "0cd76526a109ad642cd9b20abb5fd97e145452bff95b64b687522ae48256ef2c",
    "lignes": 98,
-   "premiere_ligne": "---",
-   "derniere_ligne_commence_par": "*Mettre à jour quand un nouveau skill est créé"
+   "temoins": {
+    "1": "---",
+    "5": "# Skills disponibles — AURA Hervé",
+    "12": "## Skills spécialisés localisation jeux (créés pour Hervé)",
+    "23": "| \"crée un outil\", \"j'aurais besoin d'un outil pour\", \"il manque quelque chose pour\" | `skill-creator` (Cowork) | Création d'un nouveau module sur mesure |",
+    "48": "## Skills Cowork utiles (intégrés à Claude)",
+    "60": "## Dossier IMPORT — traitement automatique",
+    "71": "## État des skills — v2.0 (2026-05-31)",
+    "85": "### 🔲 Gaps identifiés — à créer si le besoin émerge",
+    "90": "| `suivi-projets` | Plus de 3 projets parallèles | Moyenne — utile dès que le volume augmente |",
+    "97": "*Fichier créé le 2026-05-31. Mis à jour le 2026-05-31 — v2.0 : 7 skills opérationnels, comprehension-regles ajouté, tableau gaps enrichi.*",
+    "98": "*Mettre à jour quand un nouveau skill est créé ou qu'un gap est comblé.*"
+   }
   },
   "Core/Profile.md": {
+   "octets": 1523,
+   "sha256": "89f794003a191587da44e87a19f4ef33571ce5bdac1fa59768bb963a3b7e594c",
    "lignes": 51,
-   "premiere_ligne": "---",
-   "derniere_ligne_commence_par": "*Fichier créé le 2026-05-31. À enrichir lors du premier AURA START"
+   "temoins": {
+    "1": "---",
+    "5": "# Profile — Hervé",
+    "11": "- **Expérience :** —",
+    "12": "- **Zone :** —",
+    "18": "| — | — | — | — |",
+    "24": "| — | — | — | — |",
+    "37": "| — | — | — | — |",
+    "47": "- —",
+    "51": "*Fichier créé le 2026-05-31. À enrichir lors du premier AURA START et au fil des sessions.*"
+   }
   }
  },
  "skills_v2": [

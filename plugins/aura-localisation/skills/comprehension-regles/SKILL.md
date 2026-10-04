@@ -268,8 +268,9 @@ seulement le bon sens.
 
 **Chaînes de termes**
 - [ ] Les termes liés gardent une racine reconnaissable (Épuiser / Épuisé / Réactiver [EXEMPLE FICTIF]).
-- [ ] Un terme mécanique = un seul mot français dans tout le document ; les variantes sont cherchées par
-      programme (skill `qa-coherence`), pas à l'œil.
+- [ ] Un terme mécanique = un seul mot français dans tout le document ; les variantes connues (anciens
+      termes archivés au glossaire) sont cherchées par programme (skill `qa-coherence`), pas à l'œil ; une
+      variante jamais entrée au glossaire ne se voit qu'à la lecture, et c'est dit. <!-- [R-53] -->
 
 **Faux amis**
 - [ ] Chaque terme de la Phase 4 présent dans le jeu a été vérifié dans la traduction.

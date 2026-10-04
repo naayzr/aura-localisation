@@ -1,6 +1,6 @@
 ---
 name: gestion-gamme
-description: "Responsable de gamme (gestion de gamme, traduction, relecture) : tient le registre Core/Gammes/<Gamme>.md (produits, extensions, réimpressions, titres de cartes publiés, licence, errata, équipe, lots, BAT) et vérifie par script qu'un titre n'est pas déjà publié ; calcule le rétroplanning à rebours depuis la remise à l'imprimeur avec la capacité d'Hervé en caractères par jour ; coordination des traducteurs et relecteurs (brief, lots, suivi des livraisons, fusion des questions) ; relecture de la traduction d'un tiers avec corrections classées et synthèse ; compare deux versions du texte source pour ne retraduire que les passages modifiés ; suivi BAT1 et BAT2 ; mémoire de traduction (Références/Segments/). Déclencheurs : « nouvelle extension », « réimpression », « planning », « rétroplanning », « on tient la date ? », « répartis les lots », « brief pour le traducteur », « relis le lot de… », « erratum », « nouvelle version des règles », « le BAT est arrivé », « ce titre est déjà sorti ? »."
+description: "Responsable de gamme : tient le registre Core/Gammes/<Gamme>.md (produits, extensions, réimpressions, titres de cartes publiés, licence, errata, équipe, lots, BAT) et vérifie par script qu'un titre n'est pas déjà publié ; rétroplanning à rebours depuis la remise à l'imprimeur, à la capacité d'Hervé en caractères par jour ; coordination des traducteurs et relecteurs (brief, lots, livraisons, fusion des questions) ; relecture du travail d'un tiers ; comparaison de deux versions du texte source pour ne retraduire que le modifié ; suivi BAT1 et BAT2 ; mémoire de traduction (Références/Segments/). Déclencheurs : « nouvelle extension », « réimpression », « planning », « rétroplanning », « on tient la date ? », « répartis les lots », « brief pour le traducteur », « relis le lot de… », « erratum », « nouvelle version des règles », « le BAT est arrivé », « ce titre est déjà sorti ? »."
 ---
 
 # Gestion de gamme — registre, planning, équipe, errata, BAT
@@ -41,13 +41,17 @@ s'y rattachent.
   l'intelligence artificielle de sa fiche (`Core/Editeurs/<Éditeur>.md`, règle décrite dans le skill
   `brief-editeur`). Si la fiche dit « non autorisée », ou si un accord de confidentialité l'exclut,
   elle demande à Hervé avant d'ouvrir le fichier.
+<!-- [R-33] -->
 - **Ce qui part chez un tiers** (brief, synthèse de relecture, liste de corrections BAT) est un
-  brouillon qu'Hervé relit et envoie lui-même : phrases claires, chiffres exacts, aucun code interne,
-  aucune mention d'AURA, de l'intelligence artificielle ou de l'outil.
+  brouillon qu'Hervé relit et envoie lui-même : phrases claires, chiffres exacts, aucun code interne.
+  Ce qu'il dit, ou ne dit pas, de l'outil et de l'intelligence artificielle suit la règle « Mention
+  d'AURA et de l'IA » du skill `brief-editeur` (qui tient compte d'une obligation de déclaration
+  écrite au contrat).
 - **Jamais d'écrasement** : les fichiers reçus restent intacts ; AURA travaille sur des copies
-  `Livrables/<Projet>/<fichier>_v1`, `_v2`…
-- **Les scripts** (dossier `scripts/`) : avant de les lancer, AURA applique la règle « Les programmes
-  et le dossier d'Hervé » du skill `noyau` (fichier glissé si le programme ne voit pas le dossier ;
+  `Livrables/<Projet>/<fichier>_v1`, `_v2`… Les quatre scripts refusent aussi d'écrire un rapport
+  (`--sortie`) par-dessus un fichier existant : AURA choisit un autre nom (date, `_v2`). <!-- [R-36] [R-60] -->
+- **Les scripts** (`${CLAUDE_SKILL_DIR}/scripts/`) : avant de les lancer, AURA applique la règle « Les programmes
+  et le dossier d'Hervé » du skill `noyau`, dont « Écrire une commande » (chemins complets) <!-- [R-29] --> (fichier glissé si le programme ne voit pas le dossier ;
   rapports et registres réécrits par AURA dans HERVÉ WORLD ; jamais un fichier d'Hervé remplacé).
 
 ---
@@ -67,24 +71,31 @@ parus. Elle ne remplit que ce qu'Hervé a dit ou ce qu'un fichier montre.
 1. Ligne dans le tableau « Produits », statut « Annoncé » ou « Sources reçues ».
 2. Version du texte source reçue → tableau « Versions du texte source ».
 3. Dès que la liste des titres de cartes existe : **contrôle « titre déjà publié »** (ci-dessous).
-4. Pour une réimpression : les errata « À intégrer » du journal sont listés à Hervé (partie 5).
+4. Pour une réimpression : les errata du journal qui ne sont pas encore intégrés sont listés à Hervé
+   (partie 5).
 5. Rétroplanning (partie 2), puis répartition si d'autres traducteurs interviennent (partie 3).
 
 ### Contrôle « titre déjà publié »
 
 <!-- [I-35] -->
 ```
-python3 scripts/titres_publies.py --registre "Core/Gammes/<Gamme>.md" \
-    --glossaire "Glossaires/Glossaire_<Gamme>.xlsx" \
+python3 "${CLAUDE_SKILL_DIR}/scripts/titres_publies.py" --registre "<HERVÉ WORLD>/Core/Gammes/<Gamme>.md" \
+    --glossaire "<HERVÉ WORLD>/Glossaires/Glossaire_<Gamme>.xlsx" \
     --nouveaux cartes_extension.xlsx --col-en Title --col-fr "Titre FR"
 ```
 
+<!-- [R-50] -->
 Le script compare chaque titre anglais du nouveau produit aux titres imprimés (registre) et aux
-termes du glossaire (hors « Archivé »). Il signale, sans rien trancher :
+termes du glossaire (hors « Archivé »), lus selon leur statut (skill `glossaire`) : seul un terme Gelé
+compte comme imprimé. Il signale, sans rien trancher :
 
-- **déjà publié** : la traduction imprimée à reprendre ;
+- **déjà publié** : la traduction imprimée (registre, ou terme Gelé) à reprendre ;
 - **ÉCART** : traduction proposée différente de la traduction imprimée. Un titre publié ne change pas
   sans erratum décidé avec l'éditeur ;
+- **déjà décidé au glossaire** (terme Confirmé, pas encore imprimé) : le glossaire fait foi, une autre
+  traduction se discute avec Hervé, sans erratum ;
+- **proposition existante, non validée** (terme Brouillon ou À confirmer) : rien n'est décidé, le choix
+  se tranche au glossaire ;
 - **COLLISION** : traduction proposée déjà prise par un autre titre anglais de la gamme ;
 <!-- [I-38] -->
 - **titre proche** (au moins 85 % de ressemblance, ou identique aux accents près) : même carte ou
@@ -106,29 +117,38 @@ du registre. Puis le texte validé nourrit la mémoire de traduction (partie 7).
 
 ## 2. Le rétroplanning
 
+<!-- [R-52] -->
 Calcul à rebours depuis la date de remise des fichiers à l'imprimeur, en jours ouvrés. La chaîne :
-réception des sources → traduction → relecture → réponses aux questions → mise en page → BAT1 →
-BAT2 → fichiers d'impression → remise. La FAQ se place après la remise, hors calcul.
+réception des sources → traduction → réponses aux dernières questions de l'éditeur et leur intégration
+(les lots de questions partent pendant la traduction ; le relecteur lit un texte où les réponses sont
+déjà reportées) → relecture → mise en page → BAT1 → BAT2 → validation de la version française par
+l'éditeur de la version originale ou l'ayant droit (licence, co-édition) → fichiers d'impression →
+remise. La FAQ se place après la remise, hors calcul. Une étape propre au produit (relecture de
+l'auteur, validation juridique…) s'ajoute avec `--etape "Nom:jours:après"`, où « après » nomme
+l'étape qui la précède.
 
 **Ce qu'AURA demande, et ne suppose jamais** :
 
 - la date de remise à l'imprimeur (donnée par l'éditeur) ;
 - le volume à traduire, **compté sur le fichier** (skill `comptage-caracteres`) ;
-- **la capacité de traduction d'Hervé, en caractères par jour ouvré**. Elle se demande à lui, se note
-  dans le registre avec sa date (« capacité donnée par Hervé le AAAA-MM-JJ : N caractères par jour »),
-  et se redemande si le type de texte change (cartes courtes et livret de règles ne se traduisent pas
-  forcément au même rythme) ;
-- la durée de chaque autre étape, auprès de qui la fait (relecteur, éditeur, maquettiste) ; une étape
-  qui n'existe pas sur ce produit vaut 0 ;
+- **la capacité de traduction d'Hervé, en caractères par jour ouvré**. Elle vit dans `Core/Profile.md`,
+  et seulement là (datée, par type de texte : cartes courtes et livret de règles ne se traduisent pas
+  forcément au même rythme). Si elle y manque, ou pas pour ce type de texte, elle se demande à lui et
+  s'y écrit ; le registre ne la recopie pas, il note seulement quelle valeur a servi au calcul ; <!-- [R-41] -->
+- la durée de chaque autre étape, auprès de qui la fait (relecteur, éditeur, maquettiste, ayant
+  droit) ; une étape qui n'existe pas sur ce produit vaut 0. Pour une gamme sous licence ou en
+  co-édition, la validation par l'ayant droit dure souvent plusieurs semaines : sa durée se demande à
+  l'éditeur, elle ne se suppose pas ;
 - les jours travaillés (5, 6 ou 7 par semaine, selon lui), ses indisponibilités, et si les jours
   fériés français comptent.
 
 Exemple, toutes valeurs fictives [EXEMPLE FICTIF] :
 
 ```
-python3 scripts/retroplanning.py --produit "Extension Le Guet" --remise 2027-03-15 \
-    --caracteres 320000 --capacite 12000 --relecture 8 --questions 5 --mise-en-page 10 \
-    --bat1 5 --bat2 3 --fichiers 2 --debut 2026-11-02 --feries-fr --indispo 2026-12-24:2027-01-01
+python3 "${CLAUDE_SKILL_DIR}/scripts/retroplanning.py" --produit "Extension Le Guet" --remise 2027-03-15 \
+    --caracteres 320000 --capacite 12000 --questions 5 --relecture 8 --mise-en-page 10 \
+    --bat1 5 --bat2 3 --validation-vo 10 --fichiers 2 --debut 2026-11-02 --feries-fr \
+    --indispo 2026-12-24:2027-01-01 --etape "Relecture de l'auteur:3:relecture"
 ```
 
 Le script refuse de calculer s'il manque une information et dit laquelle demander. Il sort le tableau
@@ -139,8 +159,8 @@ confier à un autre traducteur, jours de décalage de la remise. Aucun levier n'
 <!-- [I-04] -->
 **Jalon menacé** (début possible après le début au plus tard) ou **marge faible** (2 jours ouvrés ou
 moins) : le script donne une ligne prête pour `Core/Suivi.md` ; AURA l'y ajoute et le dit à Hervé
-dans la séance. Quand la situation change (sources arrivées, levier choisi), la ligne est mise à jour
-ou retirée, jamais recopiée telle quelle.
+dans la séance. Quand la situation change (sources arrivées, levier choisi), la ligne est mise à jour,
+ou close selon la règle des fils du skill `noyau` (jamais effacée), jamais recopiée telle quelle. <!-- [R-27] -->
 
 Après validation d'Hervé, les étapes entrent dans le tableau « Calendrier en cours » du registre.
 En cours de projet, on recalcule avec `--deja-traduits <caractères faits>` et `--debut <aujourd'hui>`.
@@ -182,8 +202,8 @@ Détail et exemple : `references/relecture-tiers.md`. L'essentiel :
   Terminologie, Mécanique, Typographie, Style), **gravité** (Bloquant, Important, Suggestion),
   commentaire pour le traducteur.
 - **Synthèse bienveillante** : ce qui est réussi (cité), deux ou trois points récurrents avec leur
-  nombre, les bloquants expliqués, les questions ouvertes, la suite. Pas de note, aucun code interne,
-  aucune mention d'AURA.
+  nombre, les bloquants expliqués, les questions ouvertes, la suite. Pas de note, aucun code interne ;
+  mention de l'outil selon la règle du skill `brief-editeur`.
 - Le fichier du traducteur n'est jamais modifié ; Hervé valide les corrections avant tout envoi.
 
 ---
@@ -197,17 +217,20 @@ que ce qui a changé.
 1. **Contrôle à vide d'abord**, une fois par type de fichier : le comparateur doit voir une
    modification glissée exprès, sinon on ne croit pas son « rien n'a changé ».
    ```
-   python3 scripts/comparer_versions.py regles_v1.0.docx --controle-a-vide
+   python3 "${CLAUDE_SKILL_DIR}/scripts/comparer_versions.py" regles_v1.0.docx --controle-a-vide
    ```
 2. **Comparer** l'ancienne version (celle qui a été traduite) et la nouvelle :
    ```
-   python3 scripts/comparer_versions.py regles_v1.0.docx regles_v1.1.docx \
-       --memoire "Références/Segments/Segments_<Gamme>.csv" --sortie Livrables/<Projet>/comparaison_v1.1.md
+   python3 "${CLAUDE_SKILL_DIR}/scripts/comparer_versions.py" regles_v1.0.docx regles_v1.1.docx \
+       --memoire "<HERVÉ WORLD>/Références/Segments/Segments_<Gamme>.csv" --sortie "<HERVÉ WORLD>/Livrables/<Projet>/comparaison_v1.1.md"
    ```
    Pour un fichier de cartes, comparer par identifiant, pour qu'une carte insérée ne décale pas tout :
    ```
-   python3 scripts/comparer_versions.py cartes_v1.xlsx cartes_v2.xlsx --cle ID --colonnes "Title,Text"
+   python3 "${CLAUDE_SKILL_DIR}/scripts/comparer_versions.py" cartes_v1.xlsx cartes_v2.xlsx --cle ID --colonnes "Title,Text"
    ```
+   Les colonnes se donnent par leur en-tête exact, tel qu'il est écrit dans le fichier. Un nom absent
+   arrête le programme (au lieu de lire en silence une colonne vide), et une colonne-clé où aucune ligne
+   ne porte d'identifiant aussi : AURA relit les en-têtes que le message liste et relance. <!-- [R-49] -->
    Le rapport classe les passages en modifiés (avec le changement mot à mot `[-retiré-]{+ajouté+}`),
    ajoutés, supprimés, déplacés (texte identique, rien à retraduire), et donne le nombre exact de
    caractères à retraduire. Avec `--memoire`, il affiche la traduction française existante de l'ancien
@@ -218,8 +241,11 @@ que ce qui a changé.
 4. **Un erratum qui touche un terme Gelé ou un titre publié** ne se règle jamais en silence : il se
    décide avec l'éditeur (question par le skill `brief-editeur`), puis le glossaire est mis à jour par le
    skill `glossaire`, qui recherche aussi l'ancien terme partout où il a pu être recopié.
-5. **Réimpression** : les errata « À intégrer » sont listés à Hervé à chaque nouveau produit de type
-   réimpression, et passent à « Intégré à la réimpression <réf.> » une fois reportés.
+<!-- [R-51] -->
+5. **Réimpression** : à chaque nouveau produit de type réimpression, AURA liste à Hervé tous les errata
+   du journal qui n'ont pas encore le statut « Intégré à la réimpression <réf.> », quel que soit leur
+   statut d'avant (liste des statuts : `references/modele-registre-gamme.md`). Une fois reportés, ils
+   passent à « Intégré à la réimpression <réf.> ».
 
 Si l'erratum se facture, le compte du script sert de base ; les règles de devis sont dans le skill
 `comptage-caracteres`.
@@ -249,20 +275,33 @@ point-virgule, UTF-8. C'est la mémoire d'Hervé : on y ajoute, on n'y efface ri
 avec un brouillon :
 
 ```
-python3 scripts/segments.py aligner cartes_validees.xlsx --col-en Text --col-fr "Texte FR" \
+python3 "${CLAUDE_SKILL_DIR}/scripts/segments.py" aligner cartes_validees.xlsx --col-en Text --col-fr "Texte FR" \
     --produit "Extension Le Guet" --date 2026-11-20 \
-    --memoire "Références/Segments/Segments_<Gamme>.csv" --sortie Livrables/<Projet>/segments_a_ajouter.csv
+    --memoire "<HERVÉ WORLD>/Références/Segments/Segments_<Gamme>.csv" --sortie "<HERVÉ WORLD>/Livrables/<Projet>/segments_a_ajouter.csv"
 ```
 
 Le script écrit les lignes nouvelles dans un fichier à part (jamais d'écrasement), écarte ce qui est
 déjà en mémoire, et signale un même texte anglais déjà traduit autrement : AURA le montre à Hervé,
-rien n'est remplacé. Les lignes retenues sont ensuite ajoutées à la fin de la mémoire.
+rien n'est remplacé. Hervé peut retirer de ce fichier à part les lignes qu'il ne veut pas garder.
+
+<!-- [R-32] -->
+**Ajouter à la mémoire** — par le programme, jamais en réécrivant le CSV à la main :
+
+```
+python3 "${CLAUDE_SKILL_DIR}/scripts/segments.py" ajouter "<HERVÉ WORLD>/Livrables/<Projet>/segments_a_ajouter.csv" \
+    --memoire "<HERVÉ WORLD>/Références/Segments/Segments_<Gamme>.csv"
+```
+
+Le programme pose d'abord une copie datée de la mémoire dans `Core/Archives/`, ajoute les lignes à la
+fin dans une copie, la recompte, et ne remplace la mémoire que si « avant + ajoutés = après » et si les
+lignes d'avant sont restées identiques ; sinon il s'arrête sans rien toucher. Une ligne déjà en mémoire
+n'est pas reprise. AURA rapporte à Hervé les trois nombres (avant, ajoutés, après).
 
 **Réutiliser** — au début d'un nouveau produit, ou d'une réimpression :
 
 ```
-python3 scripts/segments.py chercher regles_extension.docx \
-    --memoire "Références/Segments/Segments_<Gamme>.csv" --sortie Livrables/<Projet>/reprise.md
+python3 "${CLAUDE_SKILL_DIR}/scripts/segments.py" chercher regles_extension.docx \
+    --memoire "<HERVÉ WORLD>/Références/Segments/Segments_<Gamme>.csv" --sortie "<HERVÉ WORLD>/Livrables/<Projet>/reprise.md"
 ```
 
 - **Identiques** : la traduction existante est proposée, après vérification du contexte : un même
@@ -283,8 +322,8 @@ Rien n'est inséré dans la traduction sans qu'Hervé l'ait vu.
 | `scripts/comparer_versions.py` | Passages modifiés, ajoutés, supprimés, déplacés entre deux versions d'un source ; caractères à retraduire ; contrôle à vide |
 | `scripts/retroplanning.py` | Rétroplanning à rebours en jours ouvrés, jalon clé, marge, leviers chiffrés, ligne pour `Core/Suivi.md` |
 | `scripts/titres_publies.py` | Contrôle « titre déjà publié » contre le registre et le glossaire |
-| `scripts/segments.py` | Mémoire de traduction : `chercher` (identiques et proches) et `aligner` (lignes à ajouter) |
-| `scripts/commun.py` | Règles communes aux quatre scripts (normalisation, lecture des tableaux, mémoire) |
+| `scripts/segments.py` | Mémoire de traduction : `chercher` (identiques et proches), `aligner` (lignes à ajouter) et `ajouter` (ajout en fin de mémoire, avec sauvegarde et recomptage) |
+| `scripts/commun.py` | Règles communes aux quatre scripts (normalisation, lecture des tableaux, colonne désignée par son en-tête, mémoire, fichier produit jamais écrit par-dessus un fichier existant) |
 | `scripts/lecture.py` | Lecture des .docx, .xlsx, .csv, .tsv, .txt, .md (copie identique partagée entre les skills) |
 
 Bibliothèque standard de Python uniquement. Formats lus : .docx, .xlsx, .csv, .tsv, .txt, .md. Un PDF

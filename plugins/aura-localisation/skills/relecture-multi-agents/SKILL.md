@@ -1,6 +1,6 @@
 ---
 name: relecture-multi-agents
-description: "Relecture COMPLÈTE d'un texte traduit de jeu de société avant livraison (chapitre, livret de règles, lot de cartes) : contrôles automatiques par script (typographie, longueurs et balises, glossaire, comptage, renvois), puis lecture par lots suivie dans Core/_EN_COURS.md (logique de jeu, style, sens), puis synthèse classée bloquant, important, mineur, qui compte les rapports réellement rendus, nomme ce qui n'a pas été vérifié, donne le verdict de livraison et les questions pour l'éditeur. Par défaut sans agent parallèle ; plusieurs relecteurs en parallèle seulement sur demande expresse d'Hervé, après annonce du nombre d'agents, de la taille des lots et de la consommation de son quota. À utiliser quand Hervé dit « relis tout le texte avant livraison », « relecture complète », « est-ce que je peux livrer ? », « dernière passe avant d'envoyer », « fais la relecture à plusieurs relecteurs ». Pas pour un seul point (qa-coherence) ni une seule phrase (traduction-jeux)."
+description: "Relecture COMPLÈTE d'un texte traduit de jeu de société avant livraison (chapitre, livret de règles, lot de cartes) : contrôles par script (typographie, longueurs et balises, glossaire, comptage, renvois), lecture par lots suivie dans Core/_EN_COURS.md (logique de jeu, style, sens), synthèse classée bloquant, important, mineur, qui compte les rapports rendus, nomme ce qui n'a pas été vérifié, donne le verdict de livraison et les questions pour l'éditeur. Sans agent parallèle par défaut ; plusieurs relecteurs seulement sur demande expresse d'Hervé, après annonce du nombre de lancements et de la consommation de son quota. Quand Hervé dit « relis tout le texte avant livraison », « relecture complète », « est-ce que je peux livrer ? », « dernière passe avant d'envoyer », « fais la relecture à plusieurs relecteurs ». Pas pour un seul point (qa-coherence) ni une seule phrase (traduction-jeux)."
 ---
 
 # relecture-multi-agents — la relecture complète avant livraison
@@ -44,13 +44,13 @@ Pourquoi : la v2.0 lançait 5 lectures intégrales et une synthèse dès qu'Herv
 1. **La copie de travail** : on relit la dernière version dans `Livrables/<Projet>/` (`_v2`, `_v3`…), jamais l'original de l'éditeur. Avant de lancer les scripts, AURA applique la règle « Les programmes et le dossier d'Hervé » du skill `noyau` : fichier glissé si le programme ne voit pas le dossier, et le plan (`PLAN.txt`) comme les rapports réécrits par AURA dans `Livrables/<Projet>/relecture/` — un fichier laissé sur la machine du programme disparaît avec la tâche.
 2. **Les références** : le glossaire de la gamme (`Glossaires/Glossaire_<Gamme>.xlsx`), la fiche de l'éditeur (`Core/Editeurs/<Éditeur>.md` : charte, registre), la carte mécanique du jeu si elle existe (skill `comprehension-regles`), la version originale (VO) si Hervé l'a.
 3. **Les portes de livraison** dans `Core/_EN_COURS.md` (règle du skill `noyau`), si elles ne sont pas déjà écrites.
-4. **Le plan, écrit avant de commencer** — avec le script `lots.py` du dossier `scripts/` de ce skill :
+4. **Le plan, écrit avant de commencer** — avec le script `lots.py` de ce skill, en chemins complets (règle « Écrire une commande » du skill `noyau`) : <!-- [R-29] -->
    ```
-   python3 scripts/lots.py <fichier> --plan Livrables/<Projet>/relecture
+   python3 "${CLAUDE_SKILL_DIR}/scripts/lots.py" <fichier> --plan "<HERVÉ WORLD>/Livrables/<Projet>/relecture"
    ```
    Il découpe le texte en lots de 30 000 caractères au plus (coupés de préférence avant un titre), affiche l'ordre de grandeur de la lecture, et écrit `relecture/PLAN.txt` : la liste des rapports attendus (5 contrôles automatiques + 1 rapport par lot). **Le plan ne se réécrit pas après coup** : c'est lui qui permettra de compter, à la fin, ce qui a vraiment été fait. Une nouvelle relecture prend un nouveau dossier (`relecture-2`).
    La relecture standard consomme aussi du quota : au-delà de quelques lots, AURA dit à Hervé, avant de commencer, le nombre de lots et l'ordre de grandeur lu, et lui propose de commencer par les parties les plus risquées (règles avant texte d'ambiance, chapitres modifiés depuis la dernière relecture).
-5. **`Core/_EN_COURS.md`** reçoit trois lignes (mises à jour, sans réécrire le fichier) : le fichier relu, le dossier de relecture, « Lot traité : 0 sur N ».
+5. **`Core/_EN_COURS.md`**, dans la section de ce projet (une section par projet, règle du skill `noyau`), reçoit trois lignes mises à jour, sans réécrire le fichier : le fichier relu, le dossier de relecture, « Relecture — lot traité : 0 sur N ». La ligne « Traduction — lot traité » et les autres projets ne bougent pas. <!-- [R-31] -->
 
 ## Étape 1 — Les contrôles automatiques (scripts, quasiment sans coût)
 
@@ -80,15 +80,15 @@ AURA lit les lots **l'un après l'autre**, dans l'ordre du plan. Pour chaque lot
 
 Après chaque lot :
 1. le rapport `lot-NN.md` est écrit dans le dossier de relecture, terminé par `FIN DU RAPPORT` ;
-2. `Core/_EN_COURS.md` passe à « Lot traité : N sur M », prochaine étape « lot N+1 » ;
+2. dans la section de ce projet de `Core/_EN_COURS.md`, « Relecture — lot traité » passe à « N sur M », prochaine étape « lot N+1 » ;
 3. si la conversation devient lourde ou si le quota approche de sa limite : sauvegarde (skill `noyau`), et la relecture reprend plus tard au lot suivant, dans une nouvelle conversation, à partir de `Core/_EN_COURS.md` et du plan.
 
 ## Relecteurs en parallèle — seulement sur demande expresse <!-- [D-03] -->
 
 Quand Hervé demande expressément une relecture « à plusieurs relecteurs » :
-1. **AURA prépare le plan** avec le nombre de relecteurs : `python3 scripts/lots.py <fichier> --relecteurs 3 --plan Livrables/<Projet>/relecture`. Les angles par défaut sont la logique de jeu, le style, les renvois ; les contrôles automatiques de l'étape 1 restent faits par script, jamais par un relecteur.
+1. **AURA prépare le plan** avec le nombre de relecteurs : `python3 "${CLAUDE_SKILL_DIR}/scripts/lots.py" <fichier> --relecteurs 3 --plan "<HERVÉ WORLD>/Livrables/<Projet>/relecture"`. Les angles par défaut sont la logique de jeu, le style, les renvois ; les contrôles automatiques de l'étape 1 restent faits par script, jamais par un relecteur.
 2. **AURA annonce, avant de lancer quoi que ce soit** : le nombre de relecteurs en même temps, le nombre total de lancements (relecteurs × lots), la taille des lots, le volume lu, et que **cela consomme son quota d'abonnement** (chaque relecteur compte pour lui-même). Texte de l'annonce : `references/relecteurs-paralleles.md`.
-3. **Plus de 3 lancements au total : AURA attend son accord explicite.** Jusqu'à 3, elle lance après l'annonce. (Plafond et ordre « fichiers, puis scripts, puis agents » : skill `noyau`.)
+3. **Le seuil d'accord, le décompte en lancements et l'ordre « fichiers, puis scripts, puis agents » sont la règle des agents du skill `noyau`** (ses règles de travail, « Dépenser juste »), appliquée telle quelle. <!-- [R-37] -->
 4. Chaque relecteur reçoit un lot, un angle, les références de l'étape 0 et la consigne d'écrire son rapport dans le dossier de relecture. Consignes complètes : `references/relecteurs-paralleles.md`.
 5. **Si la session ne permet pas de lancer des relecteurs séparés**, AURA le dit et fait la relecture standard. Elle n'écrit jamais elle-même des rapports présentés comme ceux de relecteurs qui n'ont pas existé.
 
@@ -96,7 +96,7 @@ Quand Hervé demande expressément une relecture « à plusieurs relecteurs » :
 
 **Avant toute synthèse, AURA compte les rapports réellement rendus** :
 ```
-python3 scripts/rapports.py Livrables/<Projet>/relecture
+python3 "${CLAUDE_SKILL_DIR}/scripts/rapports.py" "<HERVÉ WORLD>/Livrables/<Projet>/relecture"
 ```
 Le script relit `PLAN.txt` et, pour chaque rapport prévu, dit s'il est complet, incomplet, vide ou manquant ; il en sort un extrait et les zones non lues. Son essai intégré (`rapports.py --auto-test`) vérifie qu'il voit bien un rapport manquant, un incomplet et un vide.
 

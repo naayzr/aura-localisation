@@ -2,7 +2,7 @@
 
 Tous dans `${CLAUDE_SKILL_DIR}/scripts/`, Python 3, bibliothèque standard seulement. Ils lisent les
 fichiers avec `lecture.py` (copie identique à celle des autres skills : ne jamais la modifier seule).
-Ils travaillent sur des fichiers que le programme voit. Avant de les lancer, AURA applique la règle « Les programmes et le dossier d'Hervé » du skill `noyau`
+Ils travaillent sur des fichiers que le programme voit. Une commande écrite ici en abrégé (`gerer_glossaire.py importer …`) se lance `python3 "${CLAUDE_SKILL_DIR}/scripts/gerer_glossaire.py" importer …`, et chaque fichier d'Hervé s'y écrit en chemin complet sous HERVÉ WORLD (`<HERVÉ WORLD>`, `<glossaire>`) : règle « Écrire une commande » du skill `noyau`. <!-- [R-29] --> Avant de les lancer, AURA applique la règle « Les programmes et le dossier d'Hervé » du skill `noyau`
 (vérifier que le fichier existe pour le programme ; sinon le faire glisser ; un classeur produit hors du
 dossier se pose par la procédure « Poser un fichier produit », jamais par simple remplacement).
 
@@ -18,18 +18,21 @@ dossier se pose par la procédure « Poser un fichier produit », jamais par sim
 Sans `--ecrire`, chaque commande est un **essai** : elle affiche ce qu'elle ferait, rien de plus. Avec
 `--ecrire`, avant de toucher un glossaire existant, elle vérifie qu'Excel ne l'a pas ouvert, pose une
 sauvegarde datée dans `Core/Archives/`, écrit dans une copie temporaire, remplace, puis **relit** le
-fichier écrit et compare le nombre de termes (un écart arrête tout).
+fichier écrit et compare le nombre de termes (un écart arrête tout). Ce que la réécriture ne sait pas
+garder (colonne ajoutée, commentaire Excel, texte tapé dans la Notice) est refusé, repris dans NOTES ou
+listé : tableau dans `classeur-excel.md`. À l'import, une colonne désignée par `--colonne` doit exister
+sous ce nom exact, sinon refus ; elle passe avant toute colonne reconnue d'office. <!-- [R-30] [R-49] -->
 
 ```
-creer       --gamme "<Gamme>" --sortie Glossaires/Glossaire_<Gamme>.xlsx --par "Hervé"
-importer    <source.xlsx|.csv> --gamme "<Gamme>" --sortie Glossaires/Glossaire_<Gamme>.xlsx
+creer       --gamme "<Gamme>" --sortie "<HERVÉ WORLD>/Glossaires/Glossaire_<Gamme>.xlsx" --par "Hervé"
+importer    <source.xlsx|.csv> --gamme "<Gamme>" --sortie "<HERVÉ WORLD>/Glossaires/Glossaire_<Gamme>.xlsx"
             --provenance "<d'où il vient>" [--feuille <nom>] [--colonne EN="<en-tête>"] [--par "Hervé"]
-importer    <source> --gamme "<Gamme>" --dans Glossaires/Glossaire_<Gamme>.xlsx --provenance "…"
+importer    <source> --gamme "<Gamme>" --dans "<HERVÉ WORLD>/Glossaires/Glossaire_<Gamme>.xlsx" --provenance "…"
             [--garder-seuls]  (importer aussi les lignes où seul l'anglais est rempli)
 modifier    <glossaire> --id T-0012 --champ STATUT=Confirmé --champ GENRE=f --par "Hervé" --raison "…"
 modifier    <glossaire> --ajouter --champ EN=… --champ FR=… --champ CATÉGORIE=… [--champ "DÉFINITION MÉCANIQUE=…"]
 modifier    <glossaire> --lot decisions.csv          (colonnes ID;CHAMP;VALEUR;RAISON;PAR;ERRATUM)
-exporter    <glossaire> --sortie Livrables/<Projet>/Glossaire_<Gamme>_<Produit>_AAAA-MM-JJ.xlsx --pour relecteur
+exporter    <glossaire> --sortie "<HERVÉ WORLD>/Livrables/<Projet>/Glossaire_<Gamme>_<Produit>_AAAA-MM-JJ.xlsx" --pour relecteur
 retours     <export renvoyé par le relecteur.xlsx>
 comparer    <ancien.xlsx> <nouveau.xlsx>
 sauvegarder <glossaire>
@@ -58,7 +61,7 @@ lance si un résultat lui paraît étrange, avant de conclure quoi que ce soit.
 ## controle_glossaire.py
 
 ```
-controle_glossaire.py Glossaires/Glossaire_<Gamme>.xlsx [autre.xlsx …] [--attente-jours 30]
+python3 "${CLAUDE_SKILL_DIR}/scripts/controle_glossaire.py" "<HERVÉ WORLD>/Glossaires/Glossaire_<Gamme>.xlsx" ["<autre glossaire>" …] [--attente-jours 30]
 ```
 Trois niveaux : ANOMALIE (à corriger), À VÉRIFIER (jugement d'Hervé), INFO. Code de sortie 0 s'il n'y a
 aucune anomalie, 1 sinon, 2 si un fichier est illisible. Les numéros de ligne sont ceux de la feuille
@@ -67,7 +70,7 @@ quand elle n'a pas de ligne vide intercalée ; l'ID et le terme anglais identifi
 ## chercher_terme.py
 
 ```
-chercher_terme.py "<dossier HERVÉ WORLD>" "terme" ["autre forme" …] [--langue en|fr] [--exact] [--tout] [--avec-archives]
+python3 "${CLAUDE_SKILL_DIR}/scripts/chercher_terme.py" "<HERVÉ WORLD>" "terme" ["autre forme" …] [--langue en|fr] [--exact] [--tout] [--avec-archives]
 ```
 Casse, accents, apostrophes et tirets ignorés ; mots entiers. En anglais, il ajoute pluriel, possessif et
 formes verbales (-s, -es, -ed, -ing). En français, pluriel et féminin des noms et adjectifs ; **pour un
@@ -92,3 +95,7 @@ qu'avec `--avec-archives`.
   exacts, PDF déclaré non fouillé.
 - Essais sous Python 3.14 ; import, modification, création, sauvegarde, contrôle et recherche rejoués
   sous Python 3.9.
+- Retouches à la main (01/10/2026) : colonne ajoutée au CHANGELOG → écriture refusée, fichier intact ;
+  commentaire posé sur un terme par une autre bibliothèque (openpyxl, comme Excel) → repris dans les
+  NOTES du terme avec sa ligne de CHANGELOG ; commentaire sur la Notice → refus ; texte tapé dans la
+  Notice → listé « non gardé » ; classeur jamais retouché → aucune alerte.

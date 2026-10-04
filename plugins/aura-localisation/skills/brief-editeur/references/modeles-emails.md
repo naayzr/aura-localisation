@@ -15,8 +15,8 @@ Tous ces modèles produisent un **brouillon** : Hervé le relit et l'envoie lui-
 <!-- [I-15] -->
 - **Forme classique** : remercier, dire l'objet en une phrase, lister les pièces jointes par leur nom
   de fichier exact, proposer la suite. Pas d'émotion appuyée, pas de formule creuse.
-- **Jamais** de mention d'AURA, de l'intelligence artificielle, d'un assistant, d'un outil ou d'un
-  script : le travail présenté est celui d'Hervé.
+- **Mention d'AURA et de l'IA** : elle suit la règle 3 du SKILL.md, seule à la fixer (la fiche de
+  l'éditeur peut noter une obligation contractuelle de déclaration). <!-- [R-33] -->
 <!-- [I-12] -->
 - **Langage clair et chiffré** : numéros de question, références de cartes et de pages, nombres exacts
   (« 7 questions », « 340 cartes »). Aucun code interne (identifiant de glossaire, statut

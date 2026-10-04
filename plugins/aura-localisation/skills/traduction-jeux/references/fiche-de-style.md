@@ -1,8 +1,8 @@
 # Modèle de fiche de style d'une gamme
 
-Une fiche par gamme. Elle se range dans la mémoire d'Hervé — avec le registre de la gamme (`Core/Gammes/<Gamme>.md`) ou dans `Références/` — jamais dans l'extension. AURA la crée quand Hervé commence une gamme ou en reprend une, la remplit avec lui, et la relit avant chaque nouveau produit de la gamme.
+Une fiche par gamme, à un seul endroit : `Références/Style_<Gamme>.md` (même nom de gamme que `Core/Gammes/<Gamme>.md`), dans la mémoire d'Hervé, jamais dans l'extension. <!-- [R-41] --> AURA la crée quand Hervé commence une gamme ou en reprend une, la remplit avec lui, et la relit avant chaque nouveau produit de la gamme.
 
-Les termes n'y figurent pas : un terme vit au seul glossaire de la gamme. La fiche décrit la **voix**.
+Les termes n'y figurent pas : un terme vit au seul glossaire de la gamme. La voix narrative de l'univers vit dans la carte de voix (skill `narration-jeux`, `Références/Narration/VoixUnivers_<Gamme>.md`) et la politique sur les noms propres dans la fiche de l'éditeur (`Core/Editeurs/<Éditeur>.md`) : la fiche de style y renvoie sans les recopier. Elle décrit la **voix des règles et des cartes**.
 
 ```
 # Fiche de style — <Gamme>
@@ -13,7 +13,7 @@ Dernière relecture : <date>
 ## Adresse au joueur
 - Règles : tutoiement / vouvoiement (selon la fiche éditeur)
 - Cartes : impératif / infinitif (selon la charte de l'éditeur)
-- Texte d'ambiance : adresse directe / troisième personne
+- Texte d'ambiance : voir la carte de voix de la gamme (skill `narration-jeux`), pas ici
 
 ## Niveau de langue et densité
 - <ex. : phrases courtes, vocabulaire soutenu dans le récit, sobre dans les règles>
@@ -28,7 +28,7 @@ Dernière relecture : <date>
 - <autres formules récurrentes>
 
 ## Noms propres
-- Politique : garder l'anglais / adapter / traduire, et pour quelles catégories
+- Politique : celle de la fiche de l'éditeur (Core/Editeurs/<Éditeur>.md, « Noms propres et noms anglais »), pas ici
 - Cas tranchés : → au glossaire (catégories PERSONNAGE, LIEU, OBJET, LORE), pas ici
 
 ## Évolutions de la VO repérées

@@ -4,6 +4,11 @@
 PAR DÉFAUT RIEN N'EST ÉCRIT : chaque commande affiche ce qu'elle ferait. On relance avec --ecrire
 après l'accord d'Hervé. Avant d'écrire un glossaire existant, une sauvegarde datée est faite dans
 Core/Archives (jamais écrasée). Aucun terme n'entre validé par import : tout arrive en Brouillon.
+Le classeur est réécrit en entier : ce que le programme ne sait pas réécrire fait REFUSER l'écriture
+(onglet ou colonne hors standard dans Termes ou CHANGELOG, commentaire Excel hors des lignes de
+termes) ; un commentaire Excel posé sur un terme est repris dans ses NOTES, avec sa ligne de
+CHANGELOG ; le texte tapé à la main dans Tableau de bord ou Notice (onglets que le programme
+régénère) est listé à chaque essai et à chaque écriture comme « non gardé ».
 
   creer       --gamme NOM --sortie Glossaires/Glossaire_NOM.xlsx --par QUI
   importer    SOURCE (.xlsx/.csv) --gamme NOM (--sortie NOUVEAU.xlsx | --dans MAITRE.xlsx)
@@ -57,8 +62,32 @@ def dire(*l):
 
 
 # ------------------------------------------------------------------ outils communs
+def textes_non_repris(chemin, gamme, termes, changelog):
+    """Le texte des onglets Tableau de bord et Notice qu'aucune écriture du programme ne produit (tapé
+    à la main, par exemple) : la réécriture ne le reproduira pas. On régénère le classeur, tel qu'il est
+    et tel qu'il sera, dans un dossier temporaire, et on compare ; la liste est affichée, jamais tue."""
+    import tempfile
+    avant = M.textes_onglets(chemin)
+    actuel = M.lire_glossaire(chemin)
+    produits = {}
+    with tempfile.TemporaryDirectory() as d:
+        for nom, (ts, ch) in {"actuel": (actuel["termes"], actuel["changelog"]), "futur": (termes, changelog)}.items():
+            f = Path(d) / nom / Path(chemin).name
+            M.ecrire_glossaire(f, gamme, ts, ch)
+            for o, xs in M.textes_onglets(f).items():
+                produits.setdefault(o, set()).update(xs)
+    perdus = [(o, x) for o in avant for x in avant[o] if x not in produits.get(o, set())]
+    for o, x in perdus:
+        dire(f"NON GARDÉ à la réécriture (onglet {o}, régénéré par le programme) : « {x} »")
+    return perdus
+
+
 def ecrire_ou_essai(args, chemin, gamme, termes, changelog, existe):
     if not args.ecrire:
+        if existe:
+            textes_non_repris(chemin, gamme, termes, changelog)
+            dire("À savoir : les couleurs, largeurs de colonne et mises en forme ajoutées à la main dans Excel ne "
+                 "sont pas gardées à la réécriture ; la sauvegarde datée, elle, les garde.")
         dire("\nESSAI : rien n'a été écrit. Après l'accord d'Hervé, relancer la même commande avec --ecrire.")
         return 0
     v = M.verrou_excel(chemin)
@@ -69,6 +98,7 @@ def ecrire_ou_essai(args, chemin, gamme, termes, changelog, existe):
     if existe:
         sauv, deja = M.sauvegarder(chemin, args.archives)
         dire(f"Sauvegarde avant modification : {sauv}" + (" (identique, déjà présente)" if deja else ""))
+        textes_non_repris(chemin, gamme, termes, changelog)
     M.ecrire_glossaire(chemin, gamme, termes, changelog, remplacer=existe)
     relu = M.lire_glossaire(chemin)
     n = M.nombre_termes(relu["termes"])
@@ -98,7 +128,36 @@ def maitre_conforme(g):
         pb.append("onglets hors standard (le script ne sait pas les réécrire) : " + ", ".join(inconnus))
     if g["cellules_hors_entete"]:
         pb.append(f"{g['cellules_hors_entete']} cellule(s) remplie(s) à droite de la dernière colonne")
+    if g["changelog_hors_standard"]:
+        pb.append("colonnes hors standard dans CHANGELOG (le script ne sait pas les réécrire) : "
+                  + ", ".join(g["changelog_hors_standard"]) + " ; à porter dans RAISON, ou dans un autre classeur")
+    if g["changelog_hors_entete"]:
+        pb.append(f"{g['changelog_hors_entete']} cellule(s) remplie(s) sans en-tête dans CHANGELOG")
+    for onglet, ref, texte in M.commentaires_hors_termes(g):
+        pb.append(f"commentaire Excel que le script ne peut reprendre nulle part ({onglet}!{ref}) : « {texte} » — "
+                  "à recopier ailleurs par Hervé (dans NOTES d'un terme, par exemple), puis à supprimer dans Excel")
     return pb
+
+
+def reprendre_commentaires(g):
+    """Au moment d'écrire : chaque commentaire Excel posé sur un terme passe à la fin de ses NOTES (le
+    programme ne sait pas réécrire un commentaire). Renvoie les lignes de CHANGELOG (sans date ni
+    version) de ces reprises."""
+    lignes = []
+    par_ligne = {t["_ligne"]: t for t in g["termes"] if "_ligne" in t}
+    for onglet, ref, texte in g["commentaires"]:
+        j, n = M.ref_cellule(ref)
+        t = par_ligne.get(n) if onglet == "Termes" else None
+        if t is None or not texte:
+            continue
+        colonne = g["entetes"][j] if j is not None and j < len(g["entetes"]) and g["entetes"][j] else f"cellule {ref}"
+        avant = t["NOTES"]
+        t["NOTES"] = joindre_notes(avant, f"Commentaire Excel ({colonne}) : {texte}")
+        lignes.append({"ID": t["ID"], "EN": t["EN"], "CHAMP": "NOTES", "AVANT": avant, "APRÈS": t["NOTES"],
+                       "RAISON": f"commentaire Excel de la cellule {ref} repris dans NOTES (le programme ne garde pas "
+                                 "les commentaires)", "DÉCIDÉ PAR": ""})
+        dire(f"Commentaire Excel sur {t['ID']} {t['EN']} ({colonne}) : repris dans ses NOTES à l'écriture — « {texte} »")
+    return lignes
 
 
 def charger_maitre(chemin):
@@ -108,7 +167,10 @@ def charger_maitre(chemin):
         dire(f"Refus : {chemin} n'est pas au standard, le réécrire ferait perdre des données.")
         for p in pb:
             dire("  - " + p)
-        dire("Passer d'abord controle_glossaire.py, régler ces points (ou les faire régler par Hervé), puis relancer.")
+        dire("Ce fichier n'est pas un glossaire maître au standard : ne le modifie pas pour l'y mettre. S'il s'agit "
+             "d'une source (ancien glossaire, démonstration), importe-le comme source : « importer <ce fichier> "
+             "--sortie Glossaires/Glossaire_<Gamme>.xlsx » (version 2.0 : « migrer »). S'il s'agit bien du maître, "
+             "montre ces points à Hervé (controle_glossaire.py) ; c'est lui qui décide.")
         sys.exit(2)
     return g
 
@@ -167,7 +229,8 @@ def detecter(lignes, forcees):
                 continue
             for cible, alias in ALIAS.items():
                 if k in alias:
-                    corresp[j] = cible
+                    if cible not in forcees:   # une colonne désignée par --colonne passe avant toute autre
+                        corresp[j] = cible
                     break
         cibles = list(corresp.values())
         if "EN" in cibles and "FR" in cibles:
@@ -185,15 +248,8 @@ def lire_source(chemin, feuille):
             return {feuille: feuilles[feuille]}
         return feuilles
     if p.suffix.lower() in (".csv", ".tsv", ".txt"):
-        lignes = lecture.lignes_csv(p)
-        if sum(1 for l in lignes if len(l) > 1) < max(1, len(lignes) // 2):
-            # une ligne de titre au-dessus de l'en-tête trompe la détection du séparateur : on essaie chacun
-            import csv
-            import io
-            texte = lecture._decoder(p.read_bytes())
-            essais = [list(csv.reader(io.StringIO(texte), delimiter=d)) for d in (";", "\t", ",", "|")]
-            lignes = max(essais, key=lambda e: sum(1 for l in e if len(l) > 1))
-        return {p.name: lignes}
+        # Le séparateur et la ligne de titre au-dessus du tableau : une seule règle, celle du lecteur commun
+        return {p.name: lecture.lignes_csv(p)}
     sys.exit(f"Format non pris en charge pour l'import : {p.suffix} (accepté : .xlsx .csv .tsv)")
 
 
@@ -211,6 +267,21 @@ def construire_termes(source, args):
         if i is not None:
             break
     else:
+        i = None
+    # une colonne désignée par Hervé doit exister telle quelle : jamais remplacée en silence par une autre
+    if i is None:
+        nom, lignes = next(((n, l) for n, l in feuilles.items() if any(any(str(c).strip() for c in x) for x in l)),
+                           (next(iter(feuilles), "?"), []))
+        tete = next((x for x in lignes if sum(1 for c in x if str(c).strip()) >= 2), [])
+    else:
+        tete = lignes[i]
+    lus = [M.cle_entete(c) for c in tete]
+    absentes = [f"{cible}=« {entete} »" for cible, entete in forcees.items() if M.cle_entete(entete) not in lus]
+    if absentes:
+        dire("Refus : --colonne " + ", ".join(absentes) + " : aucun en-tête de ce nom dans la feuille « " + nom
+             + " » (en-têtes lus : " + (", ".join(str(c).strip() for c in tete if str(c).strip()) or "aucun") + ").")
+        sys.exit(2)
+    if i is None:
         dire("Refus : aucune ligne d'en-tête avec une colonne anglaise ET une colonne française n'a été trouvée.")
         dire("Indiquer les colonnes : --colonne EN=<en-tête anglais> --colonne FR=<en-tête français>.")
         sys.exit(2)
@@ -381,7 +452,8 @@ def cmd_importer(args):
         if sortie.exists():
             dire(f"\nRefus : {sortie} existe déjà. Pour l'enrichir : --dans {sortie} (fusion, avec sauvegarde).")
             return 2
-        voisins = maitres_voisins(sortie, args.gamme)
+        # le fichier qu'on importe n'est pas un second maître, même s'il est rangé dans Glossaires/ (la démo)
+        voisins = [v for v in maitres_voisins(sortie, args.gamme) if v.resolve() != Path(args.source).resolve()]
         if voisins:
             dire("\nRefus : un glossaire de cette gamme semble déjà exister : " + ", ".join(p.name for p in voisins)
                  + ". Jamais deux glossaires maîtres pour une gamme : fusionner avec --dans.")
@@ -439,7 +511,8 @@ def cmd_importer(args):
         dire("\nRien à ajouter.")
         return 0
     v = M.version_suivante(M.version_courante(g["changelog"]), False)
-    ch = g["changelog"] + [{"DATE": M.aujourdhui(), "VERSION": v, "ID": f"{ajouts[0]['ID']} à {ajouts[-1]['ID']}",
+    reprises = [dict(l, DATE=M.aujourdhui(), VERSION=v) for l in reprendre_commentaires(g)]
+    ch = g["changelog"] + reprises + [{"DATE": M.aujourdhui(), "VERSION": v, "ID": f"{ajouts[0]['ID']} à {ajouts[-1]['ID']}",
                             "EN": "—", "CHAMP": "import (fusion)", "AVANT": "",
                             "APRÈS": f"{len(ajouts)} termes ajoutés en Brouillon",
                             "RAISON": f"Import de {Path(args.source).name}" + (f" ({args.provenance})" if args.provenance else ""),
@@ -672,6 +745,7 @@ def cmd_modifier(args):
     if not nouvelles:
         dire("Aucun changement : les valeurs demandées sont déjà celles du glossaire.")
         return 0
+    nouvelles = nouvelles + reprendre_commentaires(g)
     v0 = M.version_courante(g["changelog"])
     v = M.version_suivante(v0, gravite == 2) if gravite else v0
     for l in nouvelles:
@@ -862,11 +936,125 @@ def auto_test():
         # l'import ordinaire nomme les feuilles qu'il ne lit pas
         code, out = lancer("importer", str(v2), "--gamme", "Autre", "--sortie", str(Path(d) / "x.xlsx"))
         verifier("FEUILLE NON LUE : « EXTENSION »" in out, "l'import tait les feuilles qu'il ne lit pas")
+    # ---- colonne désignée à l'import : jamais remplacée en silence par une autre
+    with tempfile.TemporaryDirectory() as d:
+        src = Path(d) / "source.csv"
+        src.write_text("EN;Traduction;Terme FR retenu\nHealth;Santé;Vie\n", encoding="utf-8")
+        code, out = lancer("importer", str(src), "--gamme", "Col", "--sortie", str(Path(d) / "Glossaire_Col.xlsx"),
+                           "--colonne", "FR=Terme FR final")
+        verifier(code == 2 and "aucun en-tête de ce nom" in out, f"--colonne vers un en-tête absent acceptée (code {code})")
+        sortie = Path(d) / "Glossaire_Col.xlsx"
+        code, out = lancer("importer", str(src), "--gamme", "Col", "--sortie", str(sortie),
+                           "--colonne", "FR=Terme FR retenu", "--ecrire")
+        lu = M.lire_glossaire(sortie)["termes"] if sortie.exists() else []
+        verifier(code == 0 and lu and lu[0]["FR"] == "Vie",
+                 f"--colonne FR=« Terme FR retenu » : FR « Vie » attendu, lu {[x['FR'] for x in lu]}")
+    # ---- ce que la réécriture ne sait pas garder : refusé, repris dans NOTES, ou montré — jamais perdu en silence
+    with tempfile.TemporaryDirectory() as d:
+        gl = Path(d) / "HERVÉ WORLD" / "Glossaires"
+        gl.mkdir(parents=True)
+        termes = []
+        for i, (en, fr) in enumerate((("Rest", "Repos"), ("Draw", "Piocher")), start=1):
+            x = {c: "" for c in M.COLONNES}
+            x.update({"ID": f"T-{i:04d}", "EN": en, "FR": fr, "CATÉGORIE": "MÉCANIQUE", "GENRE": "—",
+                      "STATUT": "Brouillon", "DATE": "2026-01-01"})
+            termes.append(x)
+        ch0 = [{"DATE": "2026-01-01", "VERSION": "1.0", "ID": "—", "EN": "—", "CHAMP": "création", "AVANT": "",
+                "APRÈS": "", "RAISON": "auto-test", "DÉCIDÉ PAR": "auto-test"}]
+        rels = ('<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship '
+                'Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/comments" '
+                'Target="../comments{n}.xml"/></Relationships>')
+        com = ('<comments xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><authors><author>H</author>'
+               '</authors><commentList><comment ref="{ref}" authorId="0"><text><r><t>{txt}</t></r></text></comment>'
+               '</commentList></comments>')
+        # (a) une colonne ajoutée à la main dans CHANGELOG : refus, fichier intact
+        a_ = gl / "Glossaire_A.xlsx"
+        M.ecrire_glossaire(a_, "A", termes, ch0)
+        def colonne_en_plus(x):   # en-tête J1 « MA NOTE » et sa valeur J2, en fin de ligne, dans CHANGELOG
+            for n, v in ((1, "MA NOTE"), (2, "à garder")):
+                debut = x.index(f'<row r="{n}">')
+                fin = x.index("</row>", debut)
+                x = x[:fin] + f'<c r="J{n}" t="inlineStr"><is><t>{v}</t></is></c>' + x[fin:]
+            return x
+        M._retoucher(a_, changer={"xl/worksheets/sheet3.xml": colonne_en_plus})
+        octets = a_.read_bytes()
+        code, out = lancer("modifier", str(a_), "--id", "T-0001", "--champ", "DÉFINITION MÉCANIQUE=se reposer", "--ecrire")
+        verifier(code == 2 and a_.read_bytes() == octets and "MA NOTE" in out,
+                 f"colonne ajoutée dans CHANGELOG non refusée (code {code}) : elle aurait disparu à l'écriture")
+        # (b) un commentaire Excel sur un terme : repris dans ses NOTES, tracé ; un texte tapé dans Notice : montré
+        b_ = gl / "Glossaire_B.xlsx"
+        M.ecrire_glossaire(b_, "B", termes, ch0)
+        M._retoucher(b_, changer={"xl/worksheets/sheet4.xml": lambda x: x.replace(
+            "</sheetData>", '<row r="60"><c r="A60" t="inlineStr"><is><t>Ma note perso</t></is></c></row></sheetData>')},
+            ajouter={"xl/worksheets/_rels/sheet2.xml.rels": rels.format(n=1),
+                     "xl/comments1.xml": com.format(ref="C2", txt="vérifier avec l'éditeur")})
+        code, out = lancer("modifier", str(b_), "--id", "T-0002", "--champ", "DÉFINITION MÉCANIQUE=prendre une carte")
+        verifier(code == 0 and "NON GARDÉ" in out and "Ma note perso" in out,
+                 "texte tapé dans la Notice non signalé à l'essai")
+        code, out = lancer("modifier", str(b_), "--id", "T-0002", "--champ", "DÉFINITION MÉCANIQUE=prendre une carte",
+                           "--ecrire")
+        lu = M.lire_glossaire(b_)
+        notes = {x["ID"]: x["NOTES"] for x in lu["termes"]}
+        trace = [l for l in lu["changelog"] if l["CHAMP"] == "NOTES" and "commentaire Excel" in l["RAISON"]]
+        verifier(code == 0 and notes.get("T-0001") == "Commentaire Excel (FR) : vérifier avec l'éditeur" and trace,
+                 f"commentaire Excel sur un terme perdu à l'écriture (NOTES lues : {notes}, trace : {len(trace)})")
+        verifier("NON GARDÉ" in out and "Ma note perso" in out, "texte tapé dans la Notice non signalé à l'écriture")
+        # (e) Excel 365 : un commentaire « à thread » sur C2 (et son double de remplacement dans comments) et une
+        # note classique sur C3, dans la même feuille : les deux sont repris, aucun n'est perdu
+        e_ = gl / "Glossaire_E.xlsx"
+        M.ecrire_glossaire(e_, "E", termes, ch0)
+        rels_e = ('<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">'
+                  '<Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/comments" Target="../comments3.xml"/>'
+                  '<Relationship Id="rId2" Type="http://schemas.microsoft.com/office/2017/10/relationships/threadedComment" Target="../threadedComments/threadedComment1.xml"/>'
+                  '</Relationships>')
+        com_e = ('<comments xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><authors><author>H</author></authors><commentList>'
+                 '<comment ref="C2" authorId="0"><text><r><t>[Threaded comment] Your version of Excel allows you to read this threaded comment</t></r></text></comment>'
+                 '<comment ref="C3" authorId="0"><text><r><t>note classique</t></r></text></comment></commentList></comments>')
+        fil_e = ('<ThreadedComments xmlns="http://schemas.microsoft.com/office/spreadsheetml/2018/threadedcomments">'
+                 '<threadedComment ref="C2" id="{1}"><text>à valider avec l\'éditeur</text></threadedComment></ThreadedComments>')
+        M._retoucher(e_, ajouter={"xl/worksheets/_rels/sheet2.xml.rels": rels_e, "xl/comments3.xml": com_e,
+                                  "xl/threadedComments/threadedComment1.xml": fil_e})
+        code, out = lancer("modifier", str(e_), "--id", "T-0002", "--champ", "DÉFINITION MÉCANIQUE=prendre une carte", "--ecrire")
+        notes_e = {x["ID"]: x["NOTES"] for x in M.lire_glossaire(e_)["termes"]}
+        verifier(code == 0 and "à valider avec l'éditeur" in notes_e.get("T-0001", "") and "note classique" in notes_e.get("T-0002", "")
+                 and "Threaded comment" not in " ".join(notes_e.values()),
+                 f"commentaire à thread et note dans la même feuille : une des deux perdue (NOTES : {notes_e})")
+        # (g) le glossaire de démonstration rangé par Hervé dans Glossaires/ (nom voisin, hors standard) :
+        # importé comme source, sans refus « nom voisin », et jamais modifié
+        demo = gl / "Glossaire_Essai2_EN-FR.xlsx"
+        _xlsx_simple(demo, {"Démo": [["Terme (EN)", "Terme (FR)"], ["Rest", "Repos"], ["Flee", "Fuite"]]})
+        avant_demo = demo.read_bytes()
+        code, out = lancer("importer", str(demo), "--gamme", "Essai2", "--sortie", str(gl / "Glossaire_Essai2.xlsx"), "--ecrire")
+        verifier(code == 0 and (gl / "Glossaire_Essai2.xlsx").exists() and demo.read_bytes() == avant_demo,
+                 f"démo rangée dans Glossaires/ : import refusé ou démo modifiée (code {code}) — {out[-200:]}")
+        # (f) un glossaire demandé dans le dossier du plugin (commande lancée depuis le dossier du skill, chemin
+        # relatif) : refus, rien n'est écrit là où il se perdrait à la synchronisation
+        dans_plugin = Path(__file__).resolve().parent / "Glossaires" / "Glossaire_Essai.xlsx"
+        code, out = lancer("creer", "--gamme", "Essai", "--sortie", str(dans_plugin), "--ecrire")
+        verifier(code == 2 and "REFUS" in out and not dans_plugin.exists() and not dans_plugin.parent.exists(),
+                 f"glossaire écrit dans le dossier du plugin (code {code}) : il s'y perdrait")
+        # (d) un classeur jamais retouché : rien à signaler (0 fausse alerte), même quand le produit change
+        p_ = gl / "Glossaire_P.xlsx"
+        M.ecrire_glossaire(p_, "P", termes, ch0)
+        code, out = lancer("modifier", str(p_), "--id", "T-0001", "--champ", "PUBLIÉ DANS=Boîte de base")
+        verifier(code == 0 and "NON GARDÉ" not in out, "fausse alerte « NON GARDÉ » sur un classeur jamais retouché")
+        # (c) un commentaire sur la Notice : nulle part où le reprendre → refus, fichier intact
+        c_ = gl / "Glossaire_C.xlsx"
+        M.ecrire_glossaire(c_, "C", termes, ch0)
+        M._retoucher(c_, ajouter={"xl/worksheets/_rels/sheet4.xml.rels": rels.format(n=2),
+                                  "xl/comments2.xml": com.format(ref="A1", txt="à relire")})
+        octets = c_.read_bytes()
+        code, out = lancer("modifier", str(c_), "--id", "T-0001", "--champ", "DÉFINITION MÉCANIQUE=se reposer", "--ecrire")
+        verifier(code == 2 and c_.read_bytes() == octets and "Notice!A1" in out,
+                 f"commentaire Excel sur la Notice non refusé (code {code}) : il aurait disparu à l'écriture")
     if echecs:
         print("AUTO-TEST ÉCHEC : " + " ; ".join(echecs))
         return 1
     print("AUTO-TEST OK — import en Brouillon, essai sans écriture, 5 refus, validation, CHANGELOG, sauvegarde, verrou ; "
-          "migration v2.0 : 6 onglets, statuts repris, historique repris, ancien fichier intact, feuilles non lues nommées")
+          "migration v2.0 : 6 onglets, statuts repris, historique repris, ancien fichier intact, feuilles non lues nommées ; "
+          "colonne désignée à l'import respectée ou refusée ; colonne ajoutée au CHANGELOG et commentaire hors terme "
+          "refusés, commentaire sur un terme repris dans NOTES et tracé, texte tapé dans la Notice signalé, 0 fausse "
+          "alerte sur un classeur jamais retouché")
     return 0
 
 
