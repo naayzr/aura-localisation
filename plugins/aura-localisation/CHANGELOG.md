@@ -2,6 +2,25 @@
 
 Les nouveautés expliquées à l'utilisateur sont dans `skills/mise-a-jour/references/systeme/GUIDE_AURA.md` (seul endroit). Ce fichier est le journal technique.
 
+## 3.0.4 — 2026-10-04
+Relecture finale « prêt à envoyer » (novice, publication, preuve), chaque point sérieux contre-vérifié. Le détail est dans l'atelier de Dorian.
+- La preuve (`scripts/releve.py`) ne certifie plus ce qu'elle n'a pas vu :
+  - `CLAUDE.md` ou `Core/Skills.md` remplacé alors qu'il avait changé depuis l'origine exige une copie de même empreinte dans `_archives-systeme/` ;
+  - le document de démonstration ne peut recevoir que la ligne d'avertissement ;
+  - un fichier système supprimé, une copie d'archive écrasée, un fichier créé hors de son dossier ou deux noms qui s'affichent pareil donnent ATTENTION ;
+  - un relevé qui a déjà servi est refusé ; une mise à jour coupée puis relancée le même jour garde son premier relevé ;
+  - un fichier illisible donne un refus (code 2), plus une trace en code 1 ;
+  - les noms sont gardés tels que le disque les donne et rapprochés sans la casse ;
+  - l'auto-test vise vraiment la garde du plugin, et chaque garde est éprouvée par mutation.
+- Reprise de la mise en place depuis la note de passage :
+  - l'étape se reconnaît à son nom (le guide d'Hervé numérote autrement) ;
+  - la dernière section de la note fait foi ;
+  - une étape sautée va dans `étapes à rattraper` ;
+  - « reste dans l'étape », « pas encore rangé » et les questions de profil propres à la v3 passent dans `Core/ONBOARDING.md`, que le noyau relit.
+- Si une version plus ancienne a fait la mise à jour sans lire la note, le noyau la reprend au START.
+- Version : le skill annonce « plugin 3.0.4 » (couche locale 3.0), et sa première phrase le montre.
+- Note de passage : numéros du guide d'Hervé à côté des siens, correction = nouvelle section, gestes d'installation renvoyés à ceux de Dorian, preuve promise seulement si les programmes voient le dossier.
+
 ## 3.0.3 — 2026-10-04
 - Installation par fichier (Customize > Plugins > Add > Upload plugin) : le contrôle du téléversement refuse toute description de skill qui contient des chevrons, pris pour des balises XML. Quatre descriptions en avaient (« Glossaire_<Gamme> », « <Éditeur> », « <Gamme> », « <b> ») : elles sont réécrites sans chevrons, et l'atelier contrôle désormais chaque en-tête avant de fabriquer un fichier.
 - Mise à jour : le guide `GUIDE_AURA.md`, la carte `Core/Skills.md` et le skill disent les deux chemins des nouvelles versions — toutes seules depuis la source de Dorian, par un nouveau fichier zip si le plugin a été installé depuis un fichier (c'est le cas d'Hervé depuis le 04/10). Un dossier déjà passé en 3.0 garde l'ancien texte jusqu'à la prochaine version qui change sa couche locale.

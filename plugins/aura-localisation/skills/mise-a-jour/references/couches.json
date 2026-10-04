@@ -104,23 +104,72 @@
   "traduction-jeux"
  ],
  "etapes_v2": [
-  "1 Ce qu'est AURA",
-  "2 La structure de tes fichiers",
-  "3 Ton profil",
-  "3b Ta base de connaissances (glossaires, références)",
-  "4 Tes outils",
-  "5 Un outil sur mesure",
-  "6 Une première action concrète",
-  "7 La routine"
+  {
+   "ligne": "1 Ce qu'est AURA",
+   "v3": "ACCUEIL",
+   "numero_guide": "1",
+   "noms": [
+    "Ce qu'est AURA"
+   ]
+  },
+  {
+   "ligne": "2 La structure de tes fichiers",
+   "v3": "FICHIERS",
+   "numero_guide": "2",
+   "noms": [
+    "La structure de tes fichiers"
+   ]
+  },
+  {
+   "ligne": "3 Ton profil",
+   "v3": "PROFIL",
+   "numero_guide": "3",
+   "noms": [
+    "Ton profil"
+   ]
+  },
+  {
+   "ligne": "3b Ta base de connaissances (glossaires, références)",
+   "v3": "BASE",
+   "numero_guide": "4",
+   "noms": [
+    "Ta base de connaissances"
+   ]
+  },
+  {
+   "ligne": "4 Tes outils",
+   "v3": "OUTILS",
+   "numero_guide": "5",
+   "noms": [
+    "Tes outils",
+    "Présentation de tes 7 outils"
+   ]
+  },
+  {
+   "ligne": "5 Un outil sur mesure",
+   "v3": "OUTIL-SUR-MESURE",
+   "numero_guide": "6",
+   "noms": [
+    "Un outil sur mesure",
+    "Comment créer un outil sur mesure"
+   ]
+  },
+  {
+   "ligne": "6 Une première action concrète",
+   "v3": "PREMIERE-ACTION",
+   "numero_guide": null,
+   "noms": [
+    "Une première action concrète"
+   ]
+  },
+  {
+   "ligne": "7 La routine",
+   "v3": "ROUTINE",
+   "numero_guide": "7",
+   "noms": [
+    "La routine"
+   ]
+  }
  ],
- "correspondance_etapes_v2_v3": {
-  "1": "ACCUEIL",
-  "2": "FICHIERS",
-  "3": "PROFIL",
-  "3b": "BASE",
-  "4": "OUTILS",
-  "5": "OUTIL-SUR-MESURE",
-  "6": "PREMIERE-ACTION",
-  "7": "ROUTINE"
- }
+ "etapes_v2_regle": "Une étape de la version 2.0 se reconnaît à son NOM (« noms »), jamais à son seul numéro : le guide d'Hervé et le sommaire de son AURA numérotent 1 à 7 sans « 3b » ni « première action » (« numero_guide »), le corps de l'ancien CLAUDE.md et la note de passage numérotent avec « 3b » (« ligne »)."
 }

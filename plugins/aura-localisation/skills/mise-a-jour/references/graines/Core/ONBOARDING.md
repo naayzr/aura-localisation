@@ -6,6 +6,10 @@ date de début:
 étape en cours: ACCUEIL
 étapes faites:
 questions déjà posées à l'étape en cours:
+étapes à rattraper:
+reste dans l'étape en cours:
+dit par Hervé et pas encore rangé:
+questions de la v3 à poser:
 date de fin:
 point à deux semaines:
 

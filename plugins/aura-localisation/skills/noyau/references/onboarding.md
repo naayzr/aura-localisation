@@ -12,9 +12,21 @@ date de début: AAAA-MM-JJ        (la vraie date du premier échange, lue dans l
 étape en cours: PROFIL
 étapes faites: ACCUEIL (AAAA-MM-JJ), FICHIERS (AAAA-MM-JJ)
 questions déjà posées à l'étape en cours: 1, 2, 3
+étapes à rattraper: BASE
+reste dans l'étape en cours: (repris d'une note de passage)
+dit par Hervé et pas encore rangé: (repris d'une note de passage)
+questions de la v3 à poser: PROFIL 2, 8, 11
+repris de: Core/PASSAGE_V3.md du AAAA-MM-JJ
 date de fin:
 point à deux semaines: à proposer le AAAA-MM-JJ | fait le AAAA-MM-JJ
 ```
+Les lignes de `étapes à rattraper:` à `repris de:` viennent d'une note de passage (skill `mise-a-jour`, étape 3) ; absentes ou vides, elles ne disent rien. <!-- [F-02] --> <!-- [F-15] -->
+- `étapes à rattraper:` : quand l'étape en cours est finie, tu fais d'abord celles-là, dans l'ordre des numéros, puis tu reprends la suite ; tu retires chacune de la ligne quand elle est faite.
+- `reste dans l'étape en cours:` : ce qu'il restait à faire de l'étape où il s'est arrêté ; tu reprends l'étape par là au lieu de la recommencer.
+- `dit par Hervé et pas encore rangé:` : au premier START, tu lui montres ces éléments un par un et tu les ranges avec lui à leur place (Profile, fiche éditeur, glossaire, Tasks) ; puis tu vides la ligne.
+- `questions de la v3 à poser:` : les questions de PROFIL que seule la version 3.0 pose ; tu les poses à la fin de l'étape en cours, puis tu vides la ligne.
+Si `Core/PASSAGE_V3.md` existe alors que `ONBOARDING.md` a le statut `à confirmer` et pas de ligne `repris de:` (une version plus ancienne du plugin a fait la mise à jour sans lire la note), tu ne poses pas la question ci-dessous : tu lis la note comme l'étape 3 du skill `mise-a-jour` le dit (dernière section, étape reconnue par son nom), tu remplis ce fichier, et tu montres à Hervé ce que tu en as repris. <!-- [F-06] -->
+
 Statut `à confirmer` : posé par la mise à jour quand elle n'a pas pu savoir où Hervé en était. Au premier START, tu poses la question unique de l'étape 3 du skill `mise-a-jour`, telle qu'elle y est écrite, et tu écris sa réponse dans ce fichier comme cette étape le dit. Tu ne reprends aucune étape et tu ne poses aucune question de mise en place avant sa réponse. <!-- [R-44] -->
 
 ## Les étapes — un identifiant, un numéro, toujours les mêmes
