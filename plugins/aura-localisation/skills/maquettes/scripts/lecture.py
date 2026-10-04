@@ -262,7 +262,8 @@ DIRECTIVE = re.compile(r"\ufeff?sep=(.)\r?\n")
 def separateur(texte):
     """Le séparateur d'un CSV, ou None pour une seule colonne. Deux temps.
     1. Le candidat, comme en 3.0.0 : dans l'ordre « ; », tabulation, « , », « | », le premier qui partage en
-       au moins deux cases au moins la moitié des 10 premières lignes non vides. Ce regard sur le haut du
+       au moins deux cases au moins la moitié des 10 premières lignes non vides (lues comme un CSV, guillemets
+       compris, là où la 3.0.0 cherchait seulement le caractère). Ce regard sur le haut du
        fichier suit Excel, qui enregistre par blocs de 16 lignes et n'écrit les séparateurs des colonnes
        vides de fin que là où un bloc s'en sert : un fichier « EN;FR » dont la colonne FR est encore vide plus
        bas, ou qui a une remarque dans une colonne sans titre, garde sa largeur en haut. Une première ligne
@@ -280,14 +281,20 @@ def separateur(texte):
            d'une seule case, c'est la forme que prend une colonne de phrases. Les lignes se jugent à partir de
            la première qui a la largeur du tableau : le titre lui-même (« Cartes validées, version 2 ») ne
            compte pas.
-    Limites, qui ne viennent que d'un fichier écrit à la main ou ambigu par nature :
+    Limites (un fichier écrit à la main, ambigu par nature, ou un format de nombre d'Excel). « N'est pas lu
+    avec son séparateur » veut dire : lu en une seule colonne, ou découpé par un autre séparateur.
       - un fichier dont moins de la moitié des 10 premières lignes ont le séparateur est lu en une seule
         colonne (comme en 3.0.0) ;
-      - est lu en une seule colonne un tableau dont la moitié au moins des lignes ont une espace après un
-        séparateur (« ID; EN; FR » sur chaque ligne, ou la seule ligne d'un tableau d'une ligne) ; et, sous
+      - n'est pas lu avec son séparateur un tableau dont la moitié au moins des lignes ont une espace après
+        un séparateur (« ID; EN; FR » sur chaque ligne, ou la seule ligne d'un tableau d'une ligne) ; et, sous
         un titre court écrit à la main (sans les séparateurs qu'un export ajoute), un tableau dont une ligne a
-        une espace après un séparateur, ou dont la moitié des lignes ont une case qui finit par un nombre
-        après une espace (« Carte 12 », « Épée +1 ») suivie d'une case qui commence par un nombre. Le programme qui cherche une colonne s'arrête alors sur
+        une espace après un séparateur, ou, en virgules seulement, dont la moitié des lignes ont une case qui
+        finit par un nombre après une espace (« Carte 12 », « Épée +1 ») suivie d'une case qui commence par
+        un nombre ;
+      - une colonne au format « Comptabilité » ou « Style milliers » (boutons € et 000 d'Excel, format monétaire
+        de Numbers) : l'export écrit une espace devant chaque nombre, ce qui ressemble à une phrase coupée sur
+        toutes les lignes. Le tableau n'est alors pas lu avec son séparateur. Remède : donner le classeur .xlsx
+        lui-même (il est lu directement), ou mettre cette colonne au format Standard avant l'export. Le programme qui cherche une colonne s'arrête alors sur
         « introuvable » (refus bruyant) ; un programme qui lit tout le fichier (compter.py et typo.py sans
         --colonne, comparer_versions.py sans --cle, segments.py sans --col-en, lots.py, renvois.py,
         chercher.py, chercher_terme.py) lit les lignes entières, séparateurs compris, sans le signaler ;
@@ -295,7 +302,8 @@ def separateur(texte):
         « ; » écrit à la main) est coupée là : Excel et Google Sheets mettent toujours ces guillemets ;
       - une remarque tapée dans une colonne sans en-tête, à droite d'une seule colonne de phrases : en haut
         du fichier (le premier bloc de 16 lignes d'un export Excel), elle peut faire lire le fichier en deux
-        colonnes ; plus bas, elle reste collée au texte de sa ligne, séparateur compris (comme en 3.0.0) ;
+        colonnes ; plus bas, le séparateur reste collé au texte des lignes de son bloc de 16 lignes, et les
+        guillemets d'Excel restent sur tout le fichier (comme en 3.0.0) ;
       - est lue en colonnes une colonne de listes de mots sans espace après la virgule (« Vol,Portée »,
         « Gardien,Sentinelle »), avec ou sans en-tête ; et, sans en-tête, une colonne dont moins de la moitié
         des lignes partagées coupent une phrase (nombres décimaux « Multipliez par 1,5 », virgules sans
